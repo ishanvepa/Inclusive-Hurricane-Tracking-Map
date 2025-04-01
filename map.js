@@ -3,7 +3,7 @@
       "https://code.highcharts.com/mapdata/countries/us/us-all.topo.json",
     ).then((response) => response.json())
   
-    Highcharts.mapChart("container", {
+    Highcharts.mapChart("map-container", {
       title: {
         text: "US hurricane map",
       },

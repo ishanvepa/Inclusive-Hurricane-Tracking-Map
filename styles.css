@@ -1,7 +1,7 @@
-#container {
-    height: 400px;
+#map-container {
+    height: 100%;
     min-width: 320px;
-    max-width: 800px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -9,4 +9,23 @@
     margin-top: 10em;
     text-align: center;
     color: gray;
+}
+
+
+.corner-button {
+    position: absolute;
+    width: 80px; 
+    height: 80px;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5em;
+    background-color: blue;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+
 }
