@@ -23,7 +23,7 @@
     <div class="popup" id="glossary-popup">
       <button class="close-popup" data-target="glossary">✖</button>
       <div class="popup-content">
-        <p>This is the glossary panel content.</p>
+        <p>This is the glossary.</p>
       </div>
     </div>
   </div>
@@ -34,14 +34,16 @@
     <img src="media/poi.png" alt="Points of Interest" width="23" height="29" />
   </button>
 
-  <div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
-    <div class="popup" id="poi-popup">
-      <button class="close-popup" data-target="poi">✖</button>
-      <div class="popup-content">
-        <p>This is the POI panel content.</p>
-      </div>
+  <div id="poi-popup" class="popup">
+    <div class="popup-content">
+        <button class="close-popup">✖</button>
+        <h2>Click on a location on the map to explore more details or type in a location here:</h2>
+        <input type="text" id="location-input" placeholder="Enter an address">
+        <button id="add-location">Add Location</button>
+        <div id="message"></div>
     </div>
-  </div>
+</div>
+
   
 
   <!-- layers -->
@@ -53,7 +55,7 @@
     <div class="popup" id="layers-popup">
       <button class="close-popup" data-target="layers">✖</button>
       <div class="popup-content">
-        <p>This is the Layers panel content.</p>
+        <p>Layers</p>
       </div>
     </div>
   </div>
