@@ -5,6 +5,13 @@
     margin: 0 auto;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* optional: prevents scrollbars from jumping around */
+  }
+  
+
 .loading {
     margin-top: 10em;
     text-align: center;
@@ -59,5 +66,24 @@
     right: 10px;
     cursor: pointer;
 }
+
+.layer-popup {
+    display: none;
+    position: absolute;  /* Overlay on top of the map */
+    bottom: 10px;        /* Position from the bottom-left corner */
+    right: 10px;         /* Position from the right */
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 1em;
+    border-radius: 8px;
+    z-index: 999;        /* Ensure it overlays on top */
+    width: 250px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+
+  
   
   

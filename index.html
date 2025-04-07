@@ -16,7 +16,7 @@
 
 <!-- glossary -->
 <button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
-    <img src="media/glossary.png" alt="Glossary" width="18" height="21" />
+    <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
   </button>
 
   <div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
@@ -31,7 +31,7 @@
   
   <!-- Points of interest  -->
   <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
-    <img src="media/poi.png" alt="Points of Interest" width="23" height="29" />
+    <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
   </button>
 
   <div id="poi-popup" class="popup">
@@ -55,13 +55,22 @@
     <div class="popup" id="layers-popup">
       <button class="close-popup" data-target="layers">✖</button>
       <div class="popup-content">
-        <p>Layers</p>
+        <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
+        <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
+        <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br />
+        <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label>
       </div>
     </div>
   </div>
   
+  <div id="map-container"></div>
+  
+    <!-- <div class="layer-popup" id="popup-cone">Cone of Uncertainty content here</div> -->
+  <div class="layer-popup" id="popup-path">Forecast Path content here</div>
+  <div class="layer-popup" id="popup-risk">Risk Zones content here</div>
+  <div class="layer-popup" id="popup-wiki">Wiki Maps content here</div>
   
   
 
-<div id="map-container"></div>
+
 
