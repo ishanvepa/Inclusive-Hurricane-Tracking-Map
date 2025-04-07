@@ -14,12 +14,12 @@
 
 .corner-button {
     position: absolute;
-    width: 80px; 
-    height: 80px;
+    width: 50px; 
+    height: 50px;
     top: 10px;
     right: 10px;
     font-size: 1.5em;
-    background-color: blue;
+    background-color: rgba(0, 0, 0, 0.75);/*blue;*/
     border: none;
     outline: none;
     color: white;
@@ -29,3 +29,35 @@
     z-index: 10;
 
 }
+
+.highcharts-button-symbol {
+    fill: white !important;
+  }
+  
+  .popup {
+    display: none;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 1em;
+    border-radius: 8px;
+    z-index: 999;
+    width: 250px; /* Adjust width as needed */
+}
+
+.popup-content {
+    margin-top: 30px;
+}
+
+.close-popup {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+  
+  

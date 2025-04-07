@@ -5,10 +5,61 @@
 <script src="map.js"></script>
 <link rel="stylesheet" href="styles.css"/>
 
+<!--
 <button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">glossary</button>
 <button class="corner-button" id="poi-button" style="right:auto; left:10px;">poi</button>
 <button class="corner-button" id="layers-button">layers</button>
 <button class="corner-button" id="zoom-button" style="top:auto; bottom:10px;">zoom</button>
+-->
+
+
+
+<!-- glossary -->
+<button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
+    <img src="media/glossary.png" alt="Glossary" width="18" height="21" />
+  </button>
+
+  <div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
+    <div class="popup" id="glossary-popup">
+      <button class="close-popup" data-target="glossary">✖</button>
+      <div class="popup-content">
+        <p>This is the glossary panel content.</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Points of interest  -->
+  <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
+    <img src="media/poi.png" alt="Points of Interest" width="23" height="29" />
+  </button>
+
+  <div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
+    <div class="popup" id="poi-popup">
+      <button class="close-popup" data-target="poi">✖</button>
+      <div class="popup-content">
+        <p>This is the POI panel content.</p>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- layers -->
+  <button class="corner-button" id="layers-button">
+    <img src="media/layers.png" alt="Layers" width="25" height="25" />
+  </button>
+
+  <div class="button-popup-wrapper" style="position: absolute; top: 10px; right: 295px;">
+    <div class="popup" id="layers-popup">
+      <button class="close-popup" data-target="layers">✖</button>
+      <div class="popup-content">
+        <p>This is the Layers panel content.</p>
+      </div>
+    </div>
+  </div>
+  
+  
+  
 
 <div id="map-container"></div>
 

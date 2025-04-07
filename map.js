@@ -2,6 +2,21 @@
     const usa = await fetch(
       "https://code.highcharts.com/mapdata/countries/us/us-all.topo.json",
     ).then((response) => response.json())
+
+    Highcharts.setOptions({
+      mapNavigation: {
+        buttonOptions: {
+          theme: {
+            symbolStroke: '#ffffff', // this sets the + / - color
+            symbolFill: '#ffffff',
+            style: {
+              color: '#ffffff'
+            }
+          }
+        }
+      }
+    });
+    
   
     Highcharts.mapChart("map-container", {
       title: {
@@ -13,10 +28,30 @@
         layout: "vertical",
         verticalAlign: "bottom",
       },
+
       
+     
       mapNavigation: {
-          enabled: true
+        enabled: true,
+        enableButtons: true,
+        buttonOptions: {
+          align: 'right',
+          verticalAlign: 'bottom',
+          x: -10,
+          y: -10,
+          theme: {
+            fill: 'rgba(0,0,0,0.75)', // semi-transparent background
+            stroke: 'rgba(0,0,0,0.75)',
+            style: {
+              color: '#ffffff', // bright white icon/text
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }
+          }
+        }
       },
+      
+      
   
       series: [
         // Base
@@ -88,5 +123,30 @@
         },
       ],
     })
+
+    
+    // Generic function to toggle buttons and popups
+    function setupToggle(buttonId, popupId) {
+      const button = document.getElementById(buttonId);
+      const popup = document.getElementById(popupId);
+      const closeBtn = popup.querySelector('.close-popup');
+
+      button.addEventListener('click', () => {
+        button.style.display = 'none';
+        popup.style.display = 'block';
+      });
+
+      closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+        button.style.display = 'inline-block';
+      });
+    }
+
+    // Setup for glossary
+    setupToggle('glossary-button', 'glossary-popup');
+    setupToggle('poi-button', 'poi-popup');
+    setupToggle('layers-button', 'layers-popup');
+
+
   })()
   
