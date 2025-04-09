@@ -33,16 +33,19 @@
   <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
     <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
   </button>
+</div>
 
-  <div id="poi-popup" class="popup">
-    <div class="popup-content">
-        <button class="close-popup">✖</button>
-        <h2>Click on a location on the map to explore more details or type in a location here:</h2>
+<div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
+    <div class="popup" id="poi-popup">
+      <button class="close-popup" data-target="poi">✖</button>
+      <h2>Click on a location on the map to explore more details or type in a location here:</h2>
         <input type="text" id="location-input" placeholder="Enter an address">
         <button id="add-location">Add Location</button>
         <div id="message"></div>
     </div>
-</div>
+  </div>
+
+  
 
   
 

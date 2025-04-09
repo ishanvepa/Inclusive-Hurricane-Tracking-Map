@@ -143,13 +143,11 @@
       button.addEventListener('click', () => {
         button.style.display = 'none';
         popup.style.display = 'block';
-        updateUIForPopups(true); // Update the map UI when a popup is shown
       });
 
       closeBtn.addEventListener('click', () => {
         popup.style.display = 'none';
         button.style.display = 'inline-block';
-        updateUIForPopups(false); // Update the map UI when a popup is closed
       });
     }
 
@@ -183,39 +181,5 @@
       });
     }
 
-    // Adjust the legend and map navigation buttons when popups are visible
-    function updateUIForPopups(isPopupVisible) {
-      const chart = Highcharts.charts[0]; // Get the current map chart instance
-
-      // Adjust the legend's position
-      const legend = chart.legend;
-      if (isPopupVisible) {
-        legend.update({
-          x: -250,  // Move legend to the left when popups are visible
-        });
-
-        // Adjust the map navigation buttons
-        chart.update({
-          mapNavigation: {
-            buttonOptions: {
-              x: -100,  // Shift the buttons left when popups are visible
-            },
-          },
-        });
-      } else {
-        legend.update({
-          x: -20, // Move legend back to its original position when no popups are visible
-        });
-
-        // Reset the map navigation buttons position
-        chart.update({
-          mapNavigation: {
-            buttonOptions: {
-              x: -10,  // Move buttons back to the original position
-            },
-          },
-        });
-      }
-    }
 
 })();
