@@ -1,4 +1,29 @@
+async function loadCSV(path){
+  const response = await fetch(path);
+  const csvText = await response.text();
+  return parseCSV(csvText);
+}
+
+function parseCSV(csvText, delimiter = ',') {
+  const rows = csvText.trim().split('\n').slice(1); // remove header
+  var res = [];
+
+  for(var r = 0; r < rows.length; r++){
+    const cols = rows[r].split(',');
+    res.push({
+      time: cols[1],
+      lat: parseFloat(cols[5]),
+      lon: parseFloat(cols[6]),
+      vmax: parseInt(cols[7]),
+      mslp: parseInt(cols[8]),
+    });
+  }
+  return res;
+}
+
 ;(async () => {
+    var hurricane_path = await loadCSV("hurricane_michael_data.csv");
+    console.log(hurricane_path.map(point => [point.time, point.lon, point.lat]));
     const usa = await fetch(
       "https://code.highcharts.com/mapdata/countries/us/us-all.topo.json",
     ).then((response) => response.json())
@@ -67,29 +92,25 @@
         },
         // Coastline
         {
-          name: "Coastline",
+          name: "Hurricane Path",
           type: "mapline",
-          lineWidth: 6,
-          color: "#d22",
+          lineWidth: 3,
+          color: "#000000",
           legendSymbolColor: "#d22",
           data: [
             {
               geometry: {
                 type: "LineString",
-                coordinates: [
-                  [-88.57, 30.34],
-                  [-87.18, 30.37],
-                  [-85.65, 30.12],
-                ],
+                coordinates: hurricane_path.map(point => [point.lon, point.lat]) //not working
               },
             },
           ],
         },
         // Markers
         {
-          name: "Markers",
+          name: "Hurricane Path Markers",
           type: "mappoint",
-          color: "#000",
+          color: "#FF0000",
           marker: {
             symbol: "mapmarker",
             radius: 6
@@ -98,32 +119,33 @@
             format: "{point.name}",
           },
           keys: ["name", "lat", "lon"],
-          data: [
-            ["Tues 10:00am", 24.34, -87.57],
-            ["H", 28.0, -88.07],
-          ],
+          data: hurricane_path.map(point => [point.time, point.lon, point.lat]),
+          // [
+          //   ["Tues 10:00am", 24.34, -87.57],
+          //   ["H", 28.0, -88.07],
+          // ],
         },
         // Cone
-        {
-          name: "Cone of uncertainty",
-          type: "map",
-          color: '#ffafafa7',
-          borderColor: '#f88',
-          dashStyle: 'dot',
-          data: [
-            {
-                // SVG path - using absolute SVG coordinate values (not lat/lon).
-              /* 
-                  You can also define map data here, using GeoJSON or TopoJSON,
-                  which will let you use lat/lon coordinates. Beware that you also
-                  then need to deal with map projections. GeoJSON must be
-                  preprojected, while with TopoJSON you (probably) should copy the
-                  projection information from the base map TopoJSON.
-              */
-                path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
-            }
-          ],
-        },
+        // {
+        //   name: "Cone of uncertainty",
+        //   type: "map",
+        //   color: '#ffafafa7',
+        //   borderColor: '#f88',
+        //   dashStyle: 'dot',
+        //   data: [
+        //     {
+        //         // SVG path - using absolute SVG coordinate values (not lat/lon).
+        //       /* 
+        //           You can also define map data here, using GeoJSON or TopoJSON,
+        //           which will let you use lat/lon coordinates. Beware that you also
+        //           then need to deal with map projections. GeoJSON must be
+        //           preprojected, while with TopoJSON you (probably) should copy the
+        //           projection information from the base map TopoJSON.
+        //       */
+        //         path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
+        //     }
+        //   ],
+        // },
       ],
     });
 
