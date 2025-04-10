@@ -101,12 +101,29 @@ function parseCSV(csvText, delimiter = ',') {
             {
               geometry: {
                 type: "LineString",
-                coordinates: hurricane_path.map(point => [point.lon, point.lat]) //not working
+                coordinates: hurricane_path.map(point => [point.lon, point.lat]) 
               },
             },
           ],
         },
         // Markers
+        {
+          name: "Markers",
+          type: "mappoint",
+          color: "#000",
+          marker: {
+            symbol: "mapmarker",
+            radius: 6
+          },
+          dataLabels: {
+            format: "{point.name}",
+          },
+          keys: ["name", "lat", "lon"],
+          data: [
+            ["Tues 10:00am", 24.34, -87.57],
+            ["H", 28.0, -88.07],
+          ],
+        },
         {
           name: "Hurricane Path Markers",
           type: "mappoint",
@@ -119,7 +136,7 @@ function parseCSV(csvText, delimiter = ',') {
             format: "{point.name}",
           },
           keys: ["name", "lat", "lon"],
-          data: hurricane_path.map(point => [point.time, point.lon, point.lat]),
+          data: hurricane_path.map(point => [point.time, point.lon, point.lat]), //not working
           // [
           //   ["Tues 10:00am", 24.34, -87.57],
           //   ["H", 28.0, -88.07],
