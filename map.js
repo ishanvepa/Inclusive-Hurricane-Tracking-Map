@@ -165,13 +165,11 @@ function parseCSV(csvText, delimiter = ',') {
       button.addEventListener('click', () => {
         button.style.display = 'none';
         popup.style.display = 'block';
-        updateUIForPopups(true); // Update the map UI when a popup is shown
       });
 
       closeBtn.addEventListener('click', () => {
         popup.style.display = 'none';
         button.style.display = 'inline-block';
-        updateUIForPopups(false); // Update the map UI when a popup is closed
       });
     }
 
@@ -205,39 +203,47 @@ function parseCSV(csvText, delimiter = ',') {
       });
     }
 
-    // Adjust the legend and map navigation buttons when popups are visible
-    function updateUIForPopups(isPopupVisible) {
-      const chart = Highcharts.charts[0]; // Get the current map chart instance
-
-      // Adjust the legend's position
-      const legend = chart.legend;
-      if (isPopupVisible) {
-        legend.update({
-          x: -250,  // Move legend to the left when popups are visible
-        });
-
-        // Adjust the map navigation buttons
-        chart.update({
-          mapNavigation: {
-            buttonOptions: {
-              x: -100,  // Shift the buttons left when popups are visible
-            },
-          },
-        });
-      } else {
-        legend.update({
-          x: -20, // Move legend back to its original position when no popups are visible
-        });
-
-        // Reset the map navigation buttons position
-        chart.update({
-          mapNavigation: {
-            buttonOptions: {
-              x: -10,  // Move buttons back to the original position
-            },
-          },
-        });
-      }
+    // Add functionality for the POI address button
+document.getElementById('add-location').addEventListener('click', async () => {
+    const addressInput = document.getElementById('location-input');
+    const messageDiv = document.getElementById('message');
+    const address = addressInput.value.trim();
+    
+    if (!address) {
+      messageDiv.innerText = "Please enter a valid address.";
+      return;
     }
+    
+    // Use OpenCage Geocoding API to convert the address to lat/lon
+    // Replace 'YOUR_API_KEY' with your actual API key.
+    try {
+      const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=7f3db94804634683a492123ae49bad8b`);
+      const data = await response.json();
+      
+      if (data.results && data.results.length > 0) {
+        // Get the latitude and longitude from the first result
+        const { lat, lng } = data.results[0].geometry;
+        
+        // Add a new marker to the map.
+        // Here we assume that the "Markers" series is the third series in the chart (index 2).
+        chart.series[2].addPoint({
+          name: ' ', // you can change how the point is labeled
+          lat: lat,
+          lon: lng
+        });
+        
+        messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        // Optionally clear the input after success:
+        addressInput.value = "";
+      } else {
+        messageDiv.innerText = "Address not found. Please try again.";
+      }
+    } catch (error) {
+      messageDiv.innerText = "An error occurred while geocoding.";
+      console.error("Geocoding error:", error);
+    }
+  });
+  
+
 
 })();
