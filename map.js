@@ -181,5 +181,47 @@
       });
     }
 
+    // Add functionality for the POI address button
+document.getElementById('add-location').addEventListener('click', async () => {
+    const addressInput = document.getElementById('location-input');
+    const messageDiv = document.getElementById('message');
+    const address = addressInput.value.trim();
+    
+    if (!address) {
+      messageDiv.innerText = "Please enter a valid address.";
+      return;
+    }
+    
+    // Use OpenCage Geocoding API to convert the address to lat/lon
+    // Replace 'YOUR_API_KEY' with your actual API key.
+    try {
+      const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=7f3db94804634683a492123ae49bad8b`);
+      const data = await response.json();
+      
+      if (data.results && data.results.length > 0) {
+        // Get the latitude and longitude from the first result
+        const { lat, lng } = data.results[0].geometry;
+        
+        // Add a new marker to the map.
+        // Here we assume that the "Markers" series is the third series in the chart (index 2).
+        chart.series[2].addPoint({
+          name: ' ', // you can change how the point is labeled
+          lat: lat,
+          lon: lng
+        });
+        
+        messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        // Optionally clear the input after success:
+        addressInput.value = "";
+      } else {
+        messageDiv.innerText = "Address not found. Please try again.";
+      }
+    } catch (error) {
+      messageDiv.innerText = "An error occurred while geocoding.";
+      console.error("Geocoding error:", error);
+    }
+  });
+  
+
 
 })();
