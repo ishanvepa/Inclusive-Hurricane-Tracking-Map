@@ -10,16 +10,54 @@ function parseCSV(csvText, delimiter = ',') {
 
   for(var r = 0; r < rows.length; r++){
     const cols = rows[r].split(',');
+    var cat = "";
+
+    //assign category based on wind speed
+    if (cols[7] >= 137) {
+      cat = "Category 5";
+    } else if (cols[7] >= 113) {
+      cat = "Category 4";
+    } else if (cols[7] >= 96) {
+      cat = "Category 3";
+    } else if (cols[7] >= 83) {
+      cat = "Category 2";
+    } else if (cols[7] >= 64) {
+      cat = "Category 1";
+    } else {
+      cat = "Tropical Storm/Depression";
+    }
+
     res.push({
       time: cols[1],
       lat: parseFloat(cols[5]),
       lon: parseFloat(cols[6]),
       vmax: parseInt(cols[7]),
       mslp: parseInt(cols[8]),
+      category: cat,
     });
   }
   return res;
 }
+
+//for category 5 marker symbol
+Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
+  const centerX = x + w / 2;
+  const centerY = y + h / 2;
+
+  const scale = 1.25;
+  const r = Math.min(w, h) / 2 * scale;
+  const angle = Math.PI * 2 / 5;
+
+  const path = [];
+  for (let i = 0; i < 5; i++) {
+    const theta = i * angle - Math.PI / 2;
+    const px = centerX + r * Math.cos(theta);
+    const py = centerY + r * Math.sin(theta);
+    path.push(i === 0 ? 'M' : 'L', px, py);
+  }
+  path.push('Z');
+  return path;
+};
 
 ;(async () => {
     var hurricane_path = await loadCSV("hurricane_michael_data.csv");
@@ -108,39 +146,58 @@ function parseCSV(csvText, delimiter = ',') {
         },
         // Markers
         {
-          name: "Markers",
-          type: "mappoint",
-          color: "#000",
-          marker: {
-            symbol: "mapmarker",
-            radius: 6
-          },
-          dataLabels: {
-            format: "{point.name}",
-          },
-          keys: ["name", "lat", "lon"],
-          data: [
-            ["Tues 10:00am", 24.34, -87.57],
-            ["H", 28.0, -88.07],
-          ],
-        },
-        {
           name: "Hurricane Path Markers",
           type: "mappoint",
-          color: "#FF0000",
-          marker: {
-            symbol: "mapmarker",
-            radius: 6
-          },
           dataLabels: {
-            format: "{point.name}",
+            format: "{point.time}",
+          }, 
+          tooltip: {
+            pointFormat: `
+              <b>Classification:</b> {point.name}<br/>
+              <b>Vmax:</b> {point.vmax} knots<br/>
+              <b>MSLP:</b> {point.mslp} mb <br/>
+            `
           },
-          keys: ["name", "lat", "lon"],
-          data: hurricane_path.map(point => [point.time, point.lon, point.lat]), //not working
-          // [
-          //   ["Tues 10:00am", 24.34, -87.57],
-          //   ["H", 28.0, -88.07],
-          // ],
+          data: hurricane_path.map(point => {
+            var symbol = 'circle';
+            var color = '#FFFFFF'; // Default to white
+        
+            if (point.vmax >= 137) {
+              symbol = 'pentagon';
+              color = '#8B0000'; // Dark red
+            } else if (point.vmax >= 113) {
+              symbol = 'square';
+              color = '#FF0000'; // Red
+            } else if (point.vmax >= 96) {
+              symbol = 'triangle';
+              color = '#FFA500'; // Orange
+            } else if (point.vmax >= 83) {
+              symbol = 'circle';
+              color = '#FFFF00'; // Yellow
+            } else if (point.vmax >= 64) {
+              symbol = 'circle';
+              color = '#FFFFFF'; // White
+            } else {
+              symbol = 'circle'; // Not a hurricane
+              color = '#888888'; // Optional: grey for non-hurricane
+            }
+        
+            return {
+              name: point.category,
+              time: point.time,
+              lat: point.lat,
+              lon: point.lon,
+              vmax: point.vmax,
+              mslp: point.mslp,
+              marker: {
+                symbol: symbol,
+                fillColor: color,
+                lineColor: '#000000',
+                lineWidth: 1,
+                radius: 10
+              }
+            };
+          }),
         },
         // Cone
         // {
