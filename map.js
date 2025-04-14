@@ -60,6 +60,60 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 };
 
 ;(async () => {
+
+  const glossaryTerms = {
+    cone: {
+      header: "Cone of Uncertainty",
+      terms: [
+        { term: "Definition", definition: "An area where the center of the storm may pass, indicating uncertainty in its forecasted track." },
+        { term: "Widening", definition: "The increasing uncertainty over time." }
+      ]
+    },
+    path: {
+      header: "Forecast Path",
+      terms: [
+        { term: "Track", definition: "The predicted course of the hurricane." },
+        { term: "Intensity", definition: "Estimated strength along the track." }
+      ]
+    },
+    risk: {
+      header: "Risk Zones",
+      terms: [
+        { term: "High Risk", definition: "Locations with the highest threat from hurricane conditions." }
+      ]
+    },
+    wiki: {
+      header: "Wiki Maps",
+      terms: [
+        { term: "Additional Info", definition: "Extra details gathered from community resources." }
+      ]
+    }
+  };
+  
+  function updateGlossary() {
+    const container = document.getElementById("glossary-content");
+    // Always display a sticky header "Glossary"
+    let html = "<h2>Glossary</h2>";
+    
+    // Loop through each layer checkbox in the layers popup
+    const checkboxes = document.querySelectorAll('.layer-checkbox');
+    checkboxes.forEach(cb => {
+      const layer = cb.dataset.layer;  // e.g., "cone", "path", etc.
+      if (cb.checked && glossaryTerms[layer]) {
+        const data = glossaryTerms[layer];
+        html += `<h3>${data.header}</h3>`;
+        html += `<ul>`;
+        data.terms.forEach(item => {
+          html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
+        });
+        html += `</ul>`;
+      }
+    });
+    container.innerHTML = html;
+  }
+  
+  
+
     var hurricane_path = await loadCSV("hurricane_michael_data.csv");
     console.log(hurricane_path.map(point => [point.time, point.lon, point.lat]));
     const usa = await fetch(
@@ -222,7 +276,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           ],
         },
       ],
-    });
+    }
+    
+    );
 
     // hide the forecast path and risk markers so they don't appear on load.
     const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
@@ -286,45 +342,35 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       checkbox.addEventListener('change', (e) => {
         const layerName = e.target.dataset.layer;
         
-        // If this is the cone layer, toggle the Highcharts series only.
+        // Toggle the corresponding series:
         if (layerName === 'cone') {
           const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
           if (coneSeries) {
-            if (e.target.checked) {
-              coneSeries.setVisible(true, false);
-            } else {
-              coneSeries.setVisible(false, false);
-            }
+            coneSeries.setVisible(e.target.checked, false);
             chart.redraw();
           }
-          updatePopupPositions(); // update stacking if needed (or you can omit if not used by cone)
-          return; // Stop processing further for cone.
+        }
+        if (layerName === 'path') {
+          const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
+          const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+          if (forecastPathSeries && riskMarkersSeries) {
+            forecastPathSeries.setVisible(e.target.checked, false);
+            riskMarkersSeries.setVisible(e.target.checked, false);
+            chart.redraw();
+          }
         }
         
-        // For other layers, e.g., forecast path ("path"), toggle their associated popup and series:
+        // Toggle any associated popup for non-cone layers (if applicable)
         const popup = document.getElementById(`popup-${layerName}`);
         if (popup) {
           popup.style.display = e.target.checked ? 'block' : 'none';
         }
         
-        if (layerName === 'path') {
-          const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
-          const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
-          if (forecastPathSeries && riskMarkersSeries) {
-            if (e.target.checked) {
-              forecastPathSeries.setVisible(true, false);
-              riskMarkersSeries.setVisible(true, false);
-            } else {
-              forecastPathSeries.setVisible(false, false);
-              riskMarkersSeries.setVisible(false, false);
-            }
-            chart.redraw();
-          }
-        }
-        
         updatePopupPositions();
+        updateGlossary();
       });
     });
+    
     
     
     
@@ -341,6 +387,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         popup.style.bottom = `${10 + (popupHeight + 10) * index}px`;
       });
     }
+    
 
     // Add functionality for the POI address button
 document.getElementById('add-location').addEventListener('click', async () => {
