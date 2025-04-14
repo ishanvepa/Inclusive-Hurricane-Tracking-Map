@@ -83,6 +83,23 @@ html, body {
     overflow-y: auto;
     box-sizing: border-box;
   }
+
+  /* Glossary popup wrapper: place it fixed to the bottom left */
+  #glossary-popup {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    max-height: 300px;    /* Adjust max-height as needed */
+    max-width: 400px;     /* Allow the glossary to extend to the right */
+    overflow-y: scroll;   /* Always show the vertical scrollbar */
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 1em;
+    border-radius: 8px;
+    z-index: 999;
+  }
+  
+  
   
 .pulse-marker {
 width: 16px;

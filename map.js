@@ -60,11 +60,65 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 };
 
 ;(async () => {
-  var hurricane_path = await loadCSV("hurricane_michael_data.csv");
-  console.log(hurricane_path.map(point => [point.time, point.lon, point.lat]));
-  const usa = await fetch(
-    "https://code.highcharts.com/mapdata/countries/us/us-all.topo.json",
-  ).then((response) => response.json())
+
+  const glossaryTerms = {
+    cone: {
+      header: "Cone of Uncertainty",
+      terms: [
+        { term: "Definition", definition: "An area where the center of the storm may pass, indicating uncertainty in its forecasted track." },
+        { term: "Widening", definition: "The increasing uncertainty over time." }
+      ]
+    },
+    path: {
+      header: "Forecast Path",
+      terms: [
+        { term: "Track", definition: "The predicted course of the hurricane." },
+        { term: "Intensity", definition: "Estimated strength along the track." }
+      ]
+    },
+    risk: {
+      header: "Risk Zones",
+      terms: [
+        { term: "High Risk", definition: "Locations with the highest threat from hurricane conditions." }
+      ]
+    },
+    wiki: {
+      header: "Wiki Maps",
+      terms: [
+        { term: "Additional Info", definition: "Extra details gathered from community resources." }
+      ]
+    }
+  };
+  
+  function updateGlossary() {
+    const container = document.getElementById("glossary-content");
+    // Always display a sticky header "Glossary"
+    let html = "<h2>Glossary</h2>";
+    
+    // Loop through each layer checkbox in the layers popup
+    const checkboxes = document.querySelectorAll('.layer-checkbox');
+    checkboxes.forEach(cb => {
+      const layer = cb.dataset.layer;  // e.g., "cone", "path", etc.
+      if (cb.checked && glossaryTerms[layer]) {
+        const data = glossaryTerms[layer];
+        html += `<h3>${data.header}</h3>`;
+        html += `<ul>`;
+        data.terms.forEach(item => {
+          html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
+        });
+        html += `</ul>`;
+      }
+    });
+    container.innerHTML = html;
+  }
+  
+  
+
+    var hurricane_path = await loadCSV("hurricane_michael_data.csv");
+    console.log(hurricane_path.map(point => [point.time, point.lon, point.lat]));
+    const usa = await fetch(
+      "https://code.highcharts.com/mapdata/countries/us/us-all.topo.json",
+    ).then((response) => response.json())
 
   Highcharts.setOptions({
     mapNavigation: {
@@ -119,155 +173,131 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     },
 
-    series: [
-      // Base
-      {
-        name: "Base map",
-        nullColor: "#acb",
-        legendSymbolColor: "#acb",
-        borderColor: "#888",
-        mapData: usa,
-      },
-      // Coastline
-      {
-        name: "Hurricane Path",
-        type: "mapline",
-        lineWidth: 3,
-        color: "#000000",
-        legendSymbolColor: "#d22",
-        data: [
-          {
-            geometry: {
-              type: "LineString",
-              coordinates: hurricane_path.map(point => [point.lon, point.lat]) 
+      series: [
+        // Base
+        {
+          name: "Base map",
+          nullColor: "#acb",
+          legendSymbolColor: "#acb",
+          borderColor: "#888",
+          mapData: usa,
+        },
+        // Coastline
+        {
+          name: "Hurricane Path",
+          type: "mapline",
+          lineWidth: 3,
+          color: "#000000",
+          legendSymbolColor: "#d22",
+          data: [
+            {
+              geometry: {
+                type: "LineString",
+                coordinates: hurricane_path.map(point => [point.lon, point.lat]) 
+              },
             },
+          ],
+        },
+        // Markers
+        {
+          name: "Hurricane Path Markers",
+          type: "mappoint",
+          visible: false,
+          dataLabels: {
+            format: "{point.time}",
+          }, 
+          tooltip: {
+            pointFormat: `
+              <b>Classification:</b> {point.name}<br/>
+              <b>Vmax:</b> {point.vmax} knots<br/>
+              <b>MSLP:</b> {point.mslp} mb <br/>
+            `
           },
-        ],
-      },
-      // Markers
-      {
-        name: "Hurricane Path Markers",
-        type: "mappoint",
-        dataLabels: {
-          format: "{point.time}",
-        }, 
-        tooltip: {
-          pointFormat: `
-            <b>Classification:</b> {point.name}<br/>
-            <b>Vmax:</b> {point.vmax} knots<br/>
-            <b>MSLP:</b> {point.mslp} mb <br/>
-          `
-        },
-        data: hurricane_path.map(point => {
-          var symbol = 'circle';
-          var color = '#FFFFFF'; // Default to white
-      
-          if (point.vmax >= 137) {
-            symbol = 'pentagon';
-            color = '#8B0000'; // Dark red
-          } else if (point.vmax >= 113) {
-            symbol = 'square';
-            color = '#FF0000'; // Red
-          } else if (point.vmax >= 96) {
-            symbol = 'triangle';
-            color = '#FFA500'; // Orange
-          } else if (point.vmax >= 83) {
-            symbol = 'circle';
-            color = '#FFFF00'; // Yellow
-          } else if (point.vmax >= 64) {
-            symbol = 'circle';
-            color = '#FFFFFF'; // White
-          } else {
-            symbol = 'circle'; // Not a hurricane
-            color = '#888888'; // Optional: grey for non-hurricane
-          }
-      
-          return {
-            name: point.category,
-            time: point.time,
-            lat: point.lat,
-            lon: point.lon,
-            vmax: point.vmax,
-            mslp: point.mslp,
-            marker: {
-              symbol: symbol,
-              fillColor: color,
-              lineColor: '#000000',
-              lineWidth: 1,
-              radius: 10
+          data: hurricane_path.map(point => {
+            var symbol = 'circle';
+            var color = '#FFFFFF'; // Default to white
+        
+            if (point.vmax >= 137) {
+              symbol = 'pentagon';
+              color = '#8B0000'; // Dark red
+            } else if (point.vmax >= 113) {
+              symbol = 'square';
+              color = '#FF0000'; // Red
+            } else if (point.vmax >= 96) {
+              symbol = 'triangle';
+              color = '#FFA500'; // Orange
+            } else if (point.vmax >= 83) {
+              symbol = 'circle';
+              color = '#FFFF00'; // Yellow
+            } else if (point.vmax >= 64) {
+              symbol = 'circle';
+              color = '#FFFFFF'; // White
+            } else {
+              symbol = 'circle'; // Not a hurricane
+              color = '#888888'; // Optional: grey for non-hurricane
             }
-          };
-        }),
-      },
-    
-      // Cone
-      // {
-      //   name: "Cone of uncertainty",
-      //   type: "map",
-      //   color: '#ffafafa7',
-      //   borderColor: '#f88',
-      //   dashStyle: 'dot',
-      //   data: [
-      //     {
-      //         // SVG path - using absolute SVG coordinate values (not lat/lon).
-      //       /* 
-      //           You can also define map data here, using GeoJSON or TopoJSON,
-      //           which will let you use lat/lon coordinates. Beware that you also
-      //           then need to deal with map projections. GeoJSON must be
-      //           preprojected, while with TopoJSON you (probably) should copy the
-      //           projection information from the base map TopoJSON.
-      //       */
-      //         path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
-      //     }
-      //   ],
-      // },
-    ],
-  });
-
-  //handle current user location marker
-  document.getElementById("current-location").addEventListener("click", async () => {
-    const userLocation = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const coords = {
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          };
-          resolve(coords);
+        
+            return {
+              name: point.category,
+              time: point.time,
+              lat: point.lat,
+              lon: point.lon,
+              vmax: point.vmax,
+              mslp: point.mslp,
+              marker: {
+                symbol: symbol,
+                fillColor: color,
+                lineColor: '#000000',
+                lineWidth: 1,
+                radius: 10
+              }
+            };
+          }),
         },
-        err => {
-          console.error("Geolocation error:", err);
-          resolve(null); // or reject(err);
-        }
-      );
-    });
-  
-    if (userLocation) {
-      console.log("User location:", userLocation);
-  
-      chart.addSeries({
-        name: "Current User Location",
-        type: "mappoint",
-        color: "#0384fc",
-        marker: {
-          enabled: false
+        //Cone
+        {
+          name: "Cone of uncertainty",
+          type: "map",
+          color: '#ffafafa7',
+          borderColor: '#f88',
+          dashStyle: 'dot',
+          data: [
+            {
+                // SVG path - using absolute SVG coordinate values (not lat/lon).
+              /* 
+                  You can also define map data here, using GeoJSON or TopoJSON,
+                  which will let you use lat/lon coordinates. Beware that you also
+                  then need to deal with map projections. GeoJSON must be
+                  preprojected, while with TopoJSON you (probably) should copy the
+                  projection information from the base map TopoJSON.
+              */
+                path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
+            }
+          ],
         },
-        dataLabels: {
-          enabled: true,
-          useHTML: true,
-          formatter: function () {
-            return `<div class="pulse-marker"></div>`;
-          }
-        },
-        keys: ["lat", "lon"],
-        data: [
-          [userLocation.lat, userLocation.lon],
-        ],
-      });
-    } else {
-      alert("Unable to retrieve your location.");
+      ],
     }
-  });
+    
+    );
+
+    // hide the forecast path and risk markers so they don't appear on load.
+    const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
+    const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+    const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+
+
+    if (forecastPathSeries) {
+      forecastPathSeries.setVisible(false, false);
+    }
+    if (riskMarkersSeries) {
+      riskMarkersSeries.setVisible(false, false);
+    }
+    if (coneSeries) {
+      coneSeries.setVisible(false, false);
+    }
+
+    chart.redraw();
+
 
   //allow for map export
   $("#download_button").click(function(){
@@ -307,30 +337,57 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   setupToggle('poi-button', 'poi-popup');
   setupToggle('layers-button', 'layers-popup');
 
-  // Handle checkbox changes to show/hide popups based on layers
-  document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', (e) => {
-      const layerName = e.target.dataset.layer;
-      const popup = document.getElementById(`popup-${layerName}`);
-      if (e.target.checked) {
-        popup.style.display = 'block';
-      } else {
-        popup.style.display = 'none';
-      }
-      updatePopupPositions();
+    // Handle checkbox changes to show/hide popups based on layers
+    document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const layerName = e.target.dataset.layer;
+        
+        // Toggle the corresponding series:
+        if (layerName === 'cone') {
+          const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+          if (coneSeries) {
+            coneSeries.setVisible(e.target.checked, false);
+            chart.redraw();
+          }
+        }
+        if (layerName === 'path') {
+          const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
+          const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+          if (forecastPathSeries && riskMarkersSeries) {
+            forecastPathSeries.setVisible(e.target.checked, false);
+            riskMarkersSeries.setVisible(e.target.checked, false);
+            chart.redraw();
+          }
+        }
+        
+        // Toggle any associated popup for non-cone layers (if applicable)
+        const popup = document.getElementById(`popup-${layerName}`);
+        if (popup) {
+          popup.style.display = e.target.checked ? 'block' : 'none';
+        }
+        
+        updatePopupPositions();
+        updateGlossary();
+      });
     });
-  });
+    
+    
+    
+    
+    
+    
 
-  // Update popup positions
-  function updatePopupPositions() {
-    const visiblePopups = Array.from(document.querySelectorAll('.layer-popup'))
-      .filter(popup => popup.style.display === 'block');
-  
-    const popupHeight = 100; // Adjust based on estimated popup height + margin
-    visiblePopups.forEach((popup, index) => {
-      popup.style.bottom = `${10 + (popupHeight + 10) * index}px`;
-    });
-  }
+    // Update popup positions
+    function updatePopupPositions() {
+      const visiblePopups = Array.from(document.querySelectorAll('.layer-popup'))
+        .filter(popup => popup.style.display === 'block');
+    
+      const popupHeight = 100; // Adjust based on estimated popup height + margin
+      visiblePopups.forEach((popup, index) => {
+        popup.style.bottom = `${10 + (popupHeight + 10) * index}px`;
+      });
+    }
+    
 
     // Add functionality for the POI address button
   document.getElementById('add-location').addEventListener('click', async () => {

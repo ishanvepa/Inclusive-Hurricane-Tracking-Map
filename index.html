@@ -20,18 +20,20 @@
 
 
   <!-- glossary -->
-  <button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
-      <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
-    </button>
+<button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
+  <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
+</button>
 
-    <div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
-      <div class="popup" id="glossary-popup">
-        <button class="close-popup" data-target="glossary">✖</button>
-        <div class="popup-content">
-          <p>This is the glossary.</p>
-        </div>
-      </div>
-    </div>
+<div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
+<div class="popup" id="glossary-popup">
+  <button class="close-popup" data-target="glossary">✖</button>
+  <div class="popup-content">
+    <!-- glossary terms and header shows here -->
+    <div id="glossary-content"></div>
+  </div>
+</div>
+</div>
+
 
     
     <!-- Points of interest  -->
@@ -50,6 +52,7 @@
           <div id="message"></div>
       </div>
     </div>
+    
 
     
 
@@ -74,7 +77,6 @@
     
     <div id="map-container"></div>
     
-      <!-- <div class="layer-popup" id="popup-cone">Cone of Uncertainty content here</div> -->
     <div class="layer-popup" id="popup-path">Forecast Path content here</div>
     <div class="layer-popup" id="popup-risk">Risk Zones content here</div>
     <div class="layer-popup" id="popup-wiki">Wiki Maps content here</div>
