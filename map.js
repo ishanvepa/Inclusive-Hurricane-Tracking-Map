@@ -200,39 +200,44 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
             };
           }),
         },
-        // Cone
-        // {
-        //   name: "Cone of uncertainty",
-        //   type: "map",
-        //   color: '#ffafafa7',
-        //   borderColor: '#f88',
-        //   dashStyle: 'dot',
-        //   data: [
-        //     {
-        //         // SVG path - using absolute SVG coordinate values (not lat/lon).
-        //       /* 
-        //           You can also define map data here, using GeoJSON or TopoJSON,
-        //           which will let you use lat/lon coordinates. Beware that you also
-        //           then need to deal with map projections. GeoJSON must be
-        //           preprojected, while with TopoJSON you (probably) should copy the
-        //           projection information from the base map TopoJSON.
-        //       */
-        //         path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
-        //     }
-        //   ],
-        // },
+        //Cone
+        {
+          name: "Cone of uncertainty",
+          type: "map",
+          color: '#ffafafa7',
+          borderColor: '#f88',
+          dashStyle: 'dot',
+          data: [
+            {
+                // SVG path - using absolute SVG coordinate values (not lat/lon).
+              /* 
+                  You can also define map data here, using GeoJSON or TopoJSON,
+                  which will let you use lat/lon coordinates. Beware that you also
+                  then need to deal with map projections. GeoJSON must be
+                  preprojected, while with TopoJSON you (probably) should copy the
+                  projection information from the base map TopoJSON.
+              */
+                path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
+            }
+          ],
+        },
       ],
     });
 
     // hide the forecast path and risk markers so they don't appear on load.
     const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
     const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+    const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+
 
     if (forecastPathSeries) {
       forecastPathSeries.setVisible(false, false);
     }
     if (riskMarkersSeries) {
       riskMarkersSeries.setVisible(false, false);
+    }
+    if (coneSeries) {
+      coneSeries.setVisible(false, false);
     }
 
     chart.redraw();
@@ -280,33 +285,47 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
       checkbox.addEventListener('change', (e) => {
         const layerName = e.target.dataset.layer;
-        const popup = document.getElementById(`popup-${layerName}`);
-        if (e.target.checked) {
-          popup.style.display = 'block';
-        } else {
-          popup.style.display = 'none';
+        
+        // If this is the cone layer, toggle the Highcharts series only.
+        if (layerName === 'cone') {
+          const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+          if (coneSeries) {
+            if (e.target.checked) {
+              coneSeries.setVisible(true, false);
+            } else {
+              coneSeries.setVisible(false, false);
+            }
+            chart.redraw();
+          }
+          updatePopupPositions(); // update stacking if needed (or you can omit if not used by cone)
+          return; // Stop processing further for cone.
         }
         
-        // If the "Forecast Path" layer is being toggled...
+        // For other layers, e.g., forecast path ("path"), toggle their associated popup and series:
+        const popup = document.getElementById(`popup-${layerName}`);
+        if (popup) {
+          popup.style.display = e.target.checked ? 'block' : 'none';
+        }
+        
         if (layerName === 'path') {
-          // Find the series by their assigned names.
           const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
           const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
-          
-          // Toggle both series together.
-          if (e.target.checked) {
-            forecastPathSeries.setVisible(true, false);
-            riskMarkersSeries.setVisible(true, false);
-          } else {
-            forecastPathSeries.setVisible(false, false);
-            riskMarkersSeries.setVisible(false, false);
+          if (forecastPathSeries && riskMarkersSeries) {
+            if (e.target.checked) {
+              forecastPathSeries.setVisible(true, false);
+              riskMarkersSeries.setVisible(true, false);
+            } else {
+              forecastPathSeries.setVisible(false, false);
+              riskMarkersSeries.setVisible(false, false);
+            }
+            chart.redraw();
           }
-          chart.redraw();
         }
         
         updatePopupPositions();
       });
     });
+    
     
     
     
