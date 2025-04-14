@@ -299,6 +299,52 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     chart.redraw();
 
 
+
+    //handle current user location marker
+  document.getElementById("current-location").addEventListener("click", async () => {
+    const userLocation = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const coords = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          };
+          resolve(coords);
+        },
+        err => {
+          console.error("Geolocation error:", err);
+          resolve(null); // or reject(err);
+        }
+      );
+    });
+  
+    if (userLocation) {
+      console.log("User location:", userLocation);
+  
+      chart.addSeries({
+        name: "Current User Location",
+        type: "mappoint",
+        color: "#0384fc",
+        marker: {
+          enabled: false
+        },
+        dataLabels: {
+          enabled: true,
+          useHTML: true,
+          formatter: function () {
+            return `<div class="pulse-marker"></div>`;
+          }
+        },
+        keys: ["lat", "lon"],
+        data: [
+          [userLocation.lat, userLocation.lon],
+        ],
+      });
+    } else {
+      alert("Unable to retrieve your location.");
+    }
+  });
+  
   //allow for map export
   $("#download_button").click(function(){
     chart.exportChartLocal({
