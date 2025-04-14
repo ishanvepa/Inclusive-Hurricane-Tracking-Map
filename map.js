@@ -148,6 +148,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         {
           name: "Hurricane Path Markers",
           type: "mappoint",
+          visible: false,
           dataLabels: {
             format: "{point.time}",
           }, 
@@ -223,6 +224,20 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       ],
     });
 
+    // hide the forecast path and risk markers so they don't appear on load.
+    const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
+    const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+
+    if (forecastPathSeries) {
+      forecastPathSeries.setVisible(false, false);
+    }
+    if (riskMarkersSeries) {
+      riskMarkersSeries.setVisible(false, false);
+    }
+
+    chart.redraw();
+
+
     //allow for map export
     $("#download_button").click(function(){
       chart.exportChartLocal({
@@ -271,9 +286,31 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         } else {
           popup.style.display = 'none';
         }
+        
+        // If the "Forecast Path" layer is being toggled...
+        if (layerName === 'path') {
+          // Find the series by their assigned names.
+          const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
+          const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+          
+          // Toggle both series together.
+          if (e.target.checked) {
+            forecastPathSeries.setVisible(true, false);
+            riskMarkersSeries.setVisible(true, false);
+          } else {
+            forecastPathSeries.setVisible(false, false);
+            riskMarkersSeries.setVisible(false, false);
+          }
+          chart.redraw();
+        }
+        
         updatePopupPositions();
       });
     });
+    
+    
+    
+    
 
     // Update popup positions
     function updatePopupPositions() {
