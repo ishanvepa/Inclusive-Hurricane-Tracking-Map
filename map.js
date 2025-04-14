@@ -85,7 +85,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         reflow: false,  // Prevent resizing when popups show/hide
       },
       title: {
-        text: "US hurricane map",
+        text: "Hurricane Michael 2018",
       },
       exporting: {
         enabled: false // Disables exporting options, including the hamburger menu
@@ -221,6 +221,15 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         //   ],
         // },
       ],
+    });
+
+    //allow for map export
+    $("#download_button").click(function(){
+      chart.exportChartLocal({
+          type: 'image/png',
+          filename: 'chart_image'
+      });
+
     });
 
     // Handle resizing the map manually when the window is resized

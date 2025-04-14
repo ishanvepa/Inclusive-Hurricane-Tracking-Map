@@ -1,79 +1,85 @@
-<script src="https://code.highcharts.com/maps/highmaps.js"></script>
-<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
-<script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
-<script src="map.js"></script>
-<link rel="stylesheet" href="styles.css"/>
+<!DOCTYPE html>
+<title>
+  Inclusive Hurricane Tracking Map
+</title>
+<head>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@300;400;500;600&display=swap');
+  </style>
+</head>
+  <body>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
+    <script src="map.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-<!--
-<button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">glossary</button>
-<button class="corner-button" id="poi-button" style="right:auto; left:10px;">poi</button>
-<button class="corner-button" id="layers-button">layers</button>
-<button class="corner-button" id="zoom-button" style="top:auto; bottom:10px;">zoom</button>
--->
+  <!-- download_button -->
 
 
+  <!-- glossary -->
+  <button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
+      <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
+    </button>
 
-<!-- glossary -->
-<button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
-    <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
-  </button>
-
-  <div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
-    <div class="popup" id="glossary-popup">
-      <button class="close-popup" data-target="glossary">✖</button>
-      <div class="popup-content">
-        <p>This is the glossary.</p>
+    <div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
+      <div class="popup" id="glossary-popup">
+        <button class="close-popup" data-target="glossary">✖</button>
+        <div class="popup-content">
+          <p>This is the glossary.</p>
+        </div>
       </div>
     </div>
+
+    
+    <!-- Points of interest  -->
+    <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
+      <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
+    </button>
   </div>
 
-  
-  <!-- Points of interest  -->
-  <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
-    <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
-  </button>
-</div>
-
-<div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
-    <div class="popup" id="poi-popup">
-      <button class="close-popup" data-target="poi">✖</button>
-      <h2>Click on a location on the map to explore more details or type in a location here:</h2>
-        <input type="text" id="location-input" placeholder="Enter an address">
-        <button id="add-location">Add Location</button>
-        <div id="message"></div>
-    </div>
-  </div>
-
-  
-
-  
-
-  <!-- layers -->
-  <button class="corner-button" id="layers-button">
-    <img src="media/layers.png" alt="Layers" width="25" height="25" />
-  </button>
-
-  <div class="button-popup-wrapper" style="position: absolute; top: 10px; right: 295px;">
-    <div class="popup" id="layers-popup">
-      <button class="close-popup" data-target="layers">✖</button>
-      <div class="popup-content">
-        <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
-        <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
-        <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br />
-        <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label>
+  <div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
+      <div class="popup" id="poi-popup">
+        <button class="close-popup" data-target="poi">✖</button>
+        <h2>Click on a location on the map to explore more details or type in a location here:</h2>
+          <input type="text" id="location-input" placeholder="Enter an address">
+          <button id="add-location">Add Location</button>
+          <div id="message"></div>
       </div>
     </div>
-  </div>
+
+    
+
+    
+
+    <!-- layers -->
+    <button class="corner-button" id="layers-button">
+      <img src="media/layers.png" alt="Layers" width="25" height="25" />
+    </button>
+
+    <div class="button-popup-wrapper" style="position: absolute; top: 10px; right: 295px;">
+      <div class="popup" id="layers-popup">
+        <button class="close-popup" data-target="layers">✖</button>
+        <div class="popup-content">
+          <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
+          <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
+          <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br />
+          <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label>
+        </div>
+      </div>
+    </div>
+    
+    <div id="map-container"></div>
+    
+      <!-- <div class="layer-popup" id="popup-cone">Cone of Uncertainty content here</div> -->
+    <div class="layer-popup" id="popup-path">Forecast Path content here</div>
+    <div class="layer-popup" id="popup-risk">Risk Zones content here</div>
+    <div class="layer-popup" id="popup-wiki">Wiki Maps content here</div>
+    
   
-  <div id="map-container"></div>
-  
-    <!-- <div class="layer-popup" id="popup-cone">Cone of Uncertainty content here</div> -->
-  <div class="layer-popup" id="popup-path">Forecast Path content here</div>
-  <div class="layer-popup" id="popup-risk">Risk Zones content here</div>
-  <div class="layer-popup" id="popup-wiki">Wiki Maps content here</div>
-  
-  
+  </body>
 
 
-
+</html>
