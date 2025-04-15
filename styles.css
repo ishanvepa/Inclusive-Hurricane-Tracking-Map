@@ -89,7 +89,7 @@ html, body {
     position: fixed;
     bottom: 10px;
     left: 10px;
-    max-height: 400px;    /* Adjust max-height as needed */
+    max-height: 380px;    /* Adjust max-height as needed */
     max-width: 400px;     /* Allow the glossary to extend to the right */
     overflow-y: scroll;   /* Always show the vertical scrollbar */
     background: rgba(0, 0, 0, 0.75);
