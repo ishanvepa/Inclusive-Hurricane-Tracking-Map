@@ -93,7 +93,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   function updateGlossary() {
     const container = document.getElementById("glossary-content");
     // Always display a sticky header "Glossary"
-    let html = "<h2>Glossary</h2>";
+    let html = "<h2></h2>";
     
     // Loop through each layer checkbox in the layers popup
     const checkboxes = document.querySelectorAll('.layer-checkbox');

@@ -24,15 +24,23 @@
   <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
 </button>
 
-<div class="button-popup-wrapper" style="position: absolute; bottom: 110px; left: 10px;">
-<div class="popup" id="glossary-popup">
-  <button class="close-popup" data-target="glossary">✖</button>
-  <div class="popup-content">
-    <!-- glossary terms and header shows here -->
-    <div id="glossary-content"></div>
+<div class="button-popup-wrapper" id="glossary-wrapper">
+  <div class="popup" id="glossary-popup">
+    <button class="close-popup" data-target="glossary">✖</button>
+    <!-- Fixed header area -->
+    <div id="glossary-header">
+      <h2>Glossary</h2>
+    </div>
+    <!-- Scrollable container for definitions -->
+    <div id="glossary-content-container">
+      <div id="glossary-content">
+        <!-- Glossary terms will be injected here -->
+      </div>
+    </div>
   </div>
 </div>
-</div>
+
+
 
 
     

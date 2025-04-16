@@ -84,20 +84,37 @@ html, body {
     box-sizing: border-box;
   }
 
-  /* Glossary popup wrapper: place it fixed to the bottom left */
-  #glossary-popup {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    max-height: 370px;    /* Adjust max-height as needed */
-    max-width: 400px;     /* Allow the glossary to extend to the right */
-    overflow-y: scroll;   /* Always show the vertical scrollbar */
+  /* Glossary popup container */
+#glossary-popup {
+    position: fixed;      /* Fixed relative to the viewport */
+    bottom: 10px;         /* Constant distance from the bottom */
+    left: 10px;           /* Constant distance from the left */
+    max-height: 370px;    /* Total height of the popup */
+    max-width: 400px;     /* Allow it to extend to the right */
     background: rgba(0, 0, 0, 0.75);
     color: white;
-    padding: 1em;
     border-radius: 8px;
     z-index: 999;
+    overflow: hidden;     /* Prevent the header from scrolling */
   }
+  
+  /* Glossary header that always stays visible */
+  #glossary-header {
+    padding: 0px;
+    background: rgba(0, 0, 0, 0); /* Same as popup for consistency, or adjust as needed */
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* Scrollable content container */
+  #glossary-content-container {
+    height: calc(370px - 30px); /* For example, if your header is ~50px tall */
+    overflow-y: scroll;         /* Always show (or at least reserve space for) the scrollbar */
+    padding: 0px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
+  }
+  
+  
   
   
   
