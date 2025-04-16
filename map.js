@@ -61,6 +61,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
 ;(async () => {
 
+  let glossaryNotification = false;
+
+
   const glossaryTerms = {
     cone: {
       header: "Cone of Uncertainty",
@@ -92,16 +95,14 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
   function updateGlossary() {
     const container = document.getElementById("glossary-content");
-    let html = "<h2></h2>";
-    
+    let html = "<h2>Glossary</h2>"; // Always show the header here
     let hasDefinitions = false;
     const checkboxes = document.querySelectorAll('.layer-checkbox');
     checkboxes.forEach(cb => {
-      const layer = cb.dataset.layer;
+      const layer = cb.dataset.layer;  // e.g., "cone", "path", etc.
       if (cb.checked && glossaryTerms[layer]) {
         const data = glossaryTerms[layer];
-        html += `<h3>${data.header}</h3>`;
-        html += `<ul>`;
+        html += `<h3>${data.header}</h3><ul>`;
         data.terms.forEach(item => {
           html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
         });
@@ -111,17 +112,19 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     });
     container.innerHTML = html;
     
-    // Get the glossary popup and notification badge elements.
+    // Get glossary popup and notification badge elements
     const glossaryPopup = document.getElementById("glossary-popup");
     const notifBadge = document.getElementById("glossary-notification");
     
-    // If there are definitions and the glossary popup is not visible, show the badge.
-    if (hasDefinitions && glossaryPopup.style.display !== "block") {
+    // Use the glossaryNotification flag:
+    // If the flag is set and the glossary popup isn't open, show the badge.
+    if (glossaryNotification && glossaryPopup.style.display !== "block") {
       notifBadge.style.display = "block";
     } else {
       notifBadge.style.display = "none";
     }
   }
+  
   
   
   
@@ -405,9 +408,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const closeBtn = popup.querySelector('.close-popup');
   
     button.addEventListener('click', () => {
-      // Hide the notification badge when opening the glossary.
+      // Hide the notification badge and clear the notification flag:
       const notifBadge = document.getElementById("glossary-notification");
       notifBadge.style.display = "none";
+      glossaryNotification = false;
       
       button.style.display = 'none';
       popup.style.display = 'block';
@@ -418,6 +422,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       button.style.display = 'inline-block';
     });
   }
+  
+  
   
 
   // Setup for glossary, POI, and layers buttons
@@ -430,7 +436,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       checkbox.addEventListener('change', (e) => {
         const layerName = e.target.dataset.layer;
         
-        // Toggle the corresponding series:
+        // Toggle associated series or popup as before:
         if (layerName === 'cone') {
           const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
           if (coneSeries) {
@@ -448,16 +454,23 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           }
         }
         
-        // Toggle any associated popup for non-cone layers (if applicable)
+        // Toggle any associated popup for non-cone layers
         const popup = document.getElementById(`popup-${layerName}`);
         if (popup) {
           popup.style.display = e.target.checked ? 'block' : 'none';
+        }
+        
+        // If a layer is checked, set the notification flag.
+        if (e.target.checked) {
+          glossaryNotification = true;
         }
         
         updatePopupPositions();
         updateGlossary();
       });
     });
+    
+    
     
     
     
