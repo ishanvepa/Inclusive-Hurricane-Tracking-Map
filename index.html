@@ -79,7 +79,7 @@
         <div class="popup-content">
           <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
           <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
-          <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br />
+         <!-- <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br /> -->
           <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label>
         </div>
       </div>
@@ -87,8 +87,46 @@
     
     <div id="map-container"></div>
     
-    <div class="layer-popup" id="popup-path">Forecast Path content here</div>
-    <div class="layer-popup" id="popup-risk">Risk Zones content here</div>
+    <!-- forecast path legend -->
+    <div class="layer-popup" id="popup-path">
+      <div style="padding: 10px;">
+        <div class="legend-container">
+          <div class="legend-item">
+            <span class="symbol circle" style="color: gray;">●</span>
+            <span>TS</span>
+          </div>
+          <div class="legend-item">
+            <span class="symbol circle" style="color: white;">●</span>
+            <span>Cat 1</span>
+          </div>
+          <div class="legend-item">
+            <span class="symbol circle" style="color: #FFFF00;">●</span>
+            <span>Cat 2</span>
+          </div>
+          <div class="legend-item">
+            <span class="symbol triangle" style="color: #FFA500;">▲</span>
+            <span>Cat 3</span>
+          </div>
+          <div class="legend-item">
+            <span class="symbol square" style="color: #FF0000;">■</span>
+            <span>Cat 4</span>
+          </div>
+          <div class="legend-item">
+            <span class="symbol pentagon" style="color: #8B0000;">⬟</span>
+            <span>Cat 5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+
+    
+    <!-- Risk Zones legend -->
+    <!--<div class="layer-popup" id="popup-risk">Risk Zones content here</div>-->
+
+    <!-- Wiki Maps pop up -->
     <div class="layer-popup" id="popup-wiki">Wiki Maps content here</div>
     
   

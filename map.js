@@ -95,7 +95,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
   function updateGlossary() {
     const container = document.getElementById("glossary-content");
-    let html = "<h2>Glossary</h2>"; // Always show the header here
+    let html = "<h2></h2>"; // Always show the header here
     let hasDefinitions = false;
     const checkboxes = document.querySelectorAll('.layer-checkbox');
     checkboxes.forEach(cb => {
