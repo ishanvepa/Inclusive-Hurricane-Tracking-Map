@@ -92,13 +92,12 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
   function updateGlossary() {
     const container = document.getElementById("glossary-content");
-    // Always display a sticky header "Glossary"
     let html = "<h2></h2>";
     
-    // Loop through each layer checkbox in the layers popup
+    let hasDefinitions = false;
     const checkboxes = document.querySelectorAll('.layer-checkbox');
     checkboxes.forEach(cb => {
-      const layer = cb.dataset.layer;  // e.g., "cone", "path", etc.
+      const layer = cb.dataset.layer;
       if (cb.checked && glossaryTerms[layer]) {
         const data = glossaryTerms[layer];
         html += `<h3>${data.header}</h3>`;
@@ -107,10 +106,23 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
         });
         html += `</ul>`;
+        hasDefinitions = true;
       }
     });
     container.innerHTML = html;
+    
+    // Get the glossary popup and notification badge elements.
+    const glossaryPopup = document.getElementById("glossary-popup");
+    const notifBadge = document.getElementById("glossary-notification");
+    
+    // If there are definitions and the glossary popup is not visible, show the badge.
+    if (hasDefinitions && glossaryPopup.style.display !== "block") {
+      notifBadge.style.display = "block";
+    } else {
+      notifBadge.style.display = "none";
+    }
   }
+  
   
   
 
@@ -137,6 +149,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const chart = Highcharts.mapChart("map-container", {
     chart: {
       reflow: false,  // Prevent resizing when popups show/hide
+      panning: {
+        enabled: true,
+        type: "xy"  // Allows panning horizontally and vertically
+      },
     },
     title: {
       text: "Hurricane Michael 2018",
@@ -387,17 +403,22 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const button = document.getElementById(buttonId);
     const popup = document.getElementById(popupId);
     const closeBtn = popup.querySelector('.close-popup');
-
+  
     button.addEventListener('click', () => {
+      // Hide the notification badge when opening the glossary.
+      const notifBadge = document.getElementById("glossary-notification");
+      notifBadge.style.display = "none";
+      
       button.style.display = 'none';
       popup.style.display = 'block';
     });
-
+  
     closeBtn.addEventListener('click', () => {
       popup.style.display = 'none';
       button.style.display = 'inline-block';
     });
   }
+  
 
   // Setup for glossary, POI, and layers buttons
   setupToggle('glossary-button', 'glossary-popup');
