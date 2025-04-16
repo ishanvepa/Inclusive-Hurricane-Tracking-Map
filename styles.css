@@ -89,7 +89,7 @@ html, body {
     position: fixed;
     bottom: 10px;
     left: 10px;
-    max-height: 380px;    /* Adjust max-height as needed */
+    max-height: 370px;    /* Adjust max-height as needed */
     max-width: 400px;     /* Allow the glossary to extend to the right */
     overflow-y: scroll;   /* Always show the vertical scrollbar */
     background: rgba(0, 0, 0, 0.75);
@@ -124,6 +124,11 @@ z-index: 10;
     box-shadow: 0 0 0 0 rgba(3, 132, 252, 0);
 }
 }
+
+#message {
+    font-size: 12px; /* Change 18px to the desired size */
+  }
+  
 
   
   

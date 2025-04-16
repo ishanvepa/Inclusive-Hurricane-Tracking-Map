@@ -198,6 +198,27 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
             },
           ],
         },
+        // User Locations 
+        {
+          name: "User Locations",
+          type: "mappoint",
+          visible: true,
+          tooltip: {
+            // Disable the tooltip, or show only basic info:
+            enabled: true,
+            // Alternatively, if you want a simple tooltip, you can use:
+            pointFormat: "<b>{point.name}</b><br>Lat: {point.lat}, Lon: {point.lon}"
+          },
+          marker: {
+            // Use a different marker symbol or style than hurricane markers
+            symbol: "circle", // or any other desired symbol, or a custom image
+            fillColor: "#00008B", 
+            lineColor: "#00008B",
+            lineWidth: 1,
+            radius: 4
+          },
+          data: [] // Start empty
+        },
         // Markers
         {
           name: "Hurricane Path Markers",
@@ -458,11 +479,15 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         
         // Add a new marker to the map.
         // Here we assume that the "Markers" series is the third series in the chart (index 2).
-        chart.series[2].addPoint({
-          name: ' ', // you can change how the point is labeled
-          lat: lat,
-          lon: lng
-        });
+        const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+        if (userLocationsSeries) {
+          userLocationsSeries.addPoint({
+            name: address, // or any label you prefer
+            lat: lat,
+            lon: lng
+          });
+        }
+
         
         messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
         // Optionally clear the input after success:
