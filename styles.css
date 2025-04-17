@@ -129,6 +129,12 @@ html, body {
     transform: scale(1.7);
   }
 
+  /* Remove the big default bottom margin from the h3 */
+#popup-path h3 {
+    margin: 0;
+    padding: 2px 2px;       /* you can tweak the vertical padding as desired */
+    font-size: 1em;          /* adjust size if needed */
+  }
   
   /* Glossary popup container */
 #glossary-popup {
