@@ -165,6 +165,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     },
 
     legend: {
+      enabled: false, //using our own legend implementation
       align: "right",
       layout: "vertical",
       verticalAlign: "bottom",
