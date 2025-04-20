@@ -173,6 +173,21 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       y: -20,
     },
 
+    plotOptions: {
+      mappoint: {
+        point: {
+          events: {
+            click: function () {
+              // only remove from your "User Locations" series
+              if (this.series.options.id === 'user-locations') {
+                this.remove();  // instantly deletes the point
+              }
+            }
+          }
+        }
+      }
+    },
+
     mapNavigation: {
       enabled: true,
       enableButtons: true,
@@ -220,24 +235,32 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         },
         // User Locations 
         {
+          id: 'user-locations',  
           name: "User Locations",
           type: "mappoint",
           visible: true,
           tooltip: {
-            // Disable the tooltip, or show only basic info:
-            enabled: true,
-            // Alternatively, if you want a simple tooltip, you can use:
-            pointFormat: "<b>{point.name}</b><br>Lat: {point.lat}, Lon: {point.lon}"
+            useHTML: true,
+            hideDelay: 500,
+            pointFormatter: function() {
+              return `
+                <b>Lat:</b> ${this.lat.toFixed(4)}<br/>
+                <b>Lon:</b> ${this.lon.toFixed(4)}<br/>
+                <button onclick="removeUserLocation(${this.index})"
+                        style="margin-top:5px;padding:4px 8px;font-size:12px;">
+                  Click point to remove
+                </button>
+              `;
+            }
           },
           marker: {
-            // Use a different marker symbol or style than hurricane markers
-            symbol: "circle", // or any other desired symbol, or a custom image
-            fillColor: "#00008B", 
+            symbol: "circle",
+            fillColor: "#00008B",
             lineColor: "#00008B",
             lineWidth: 1,
             radius: 4
           },
-          data: [] // Start empty
+          data: [] // starts empty
         },
         // Markers
         {
