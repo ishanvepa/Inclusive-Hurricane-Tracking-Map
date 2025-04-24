@@ -1,0 +1,49 @@
+<button onclick="speakPage()">🔊 Listen to Page</button>
+
+<script>
+function speakPage() {
+  const content = document.body.innerText;
+  const utterance = new SpeechSynthesisUtterance(content);
+  speechSynthesis.speak(utterance);
+}
+</script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiki Map: United States</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>United States</h1>
+  <p>
+    <i>A Spatial Overview for Hurricane Interpretation</i>
+
+    <br><br>The continental United States is a wide, slightly tilted rectangle with rough edges and irregular outlines. It spans from the Atlantic Ocean in the east to the Pacific Ocean in the west, and from the Canadian border in the north to Mexico and the Gulf of Mexico in the south. The country is much wider east to west than it is tall north to south, with a central portion that is boxier and western and eastern edges that curve and jut out.
+
+    <br<br>The Atlantic Ocean borders the eastern edge of the country. Running down this eastern coastline, the land narrows slightly before dropping into the southeastern corner, where the state of Florida forms a narrow peninsula. Florida is the only state in the lower 48 with land surrounded by water on three sides—on the east by the Atlantic Ocean, on the west by the Gulf of Mexico, and on the south by the Florida Straits.
+
+    <br><br>The southeastern corner of the country is where many hurricanes make landfall or pass close by, due to the warm water currents and open coastal exposure. From Florida, moving clockwise, the Gulf Coast sweeps westward and includes the panhandle of Florida, Alabama, Mississippi, Louisiana, and the eastern coastline of Texas.
+
+    <br><br>The states in the interior of the country are generally more grid-like and rectangular, but most hurricane paths concern the coasts, particularly the southeast and Gulf regions. To mentally frame the U.S., think of it as a rectangle, with a curved scoop along the bottom edge representing the Gulf of Mexico. In the bottom-right corner of this scoop is the Florida peninsula, pointing downward like a long thumb.
+
+    <br><br>This spatial framework helps anchor major reference points—such as the southeastern states, Gulf of Mexico, and Atlantic coastline—that frequently appear in hurricane forecasts.
+  </p>
+</body>

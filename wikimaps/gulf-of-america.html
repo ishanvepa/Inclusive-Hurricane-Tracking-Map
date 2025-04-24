@@ -1,0 +1,51 @@
+<button onclick="speakPage()">🔊 Listen to Page</button>
+
+<script>
+function speakPage() {
+  const content = document.body.innerText;
+  const utterance = new SpeechSynthesisUtterance(content);
+  speechSynthesis.speak(utterance);
+}
+</script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiki Map: Gulf of Mexico</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gulf of Mexico</h1>
+  <p>
+    <i>Understanding the Gulf’s Role in Hurricane Movement</i>
+
+    <br><br>The Gulf of Mexico is a large, bowl-shaped body of water almost fully surrounded by land. It plays a central role in hurricane activity in the western Atlantic basin. Picture the Gulf as a giant semicircle or open crescent facing north, bordered by parts of both the United States and Mexico.
+
+    <br><br>Starting from the U.S., the Gulf’s northern shore includes (from east to west): the Florida Panhandle, Alabama, Mississippi, Louisiana, and the eastern edge of Texas. This stretch of coast is known for its warm waters, flat terrain, and vulnerability to storm surge.
+
+    <br><br>The western edge of the Gulf is bordered by Mexico, including the states of Tamaulipas and Veracruz. Continuing south, the coastline bends eastward to form the northern edge of the Yucatán Peninsula, which juts northward from Central America. The Yucatán acts like a wedge separating the Gulf of Mexico from the Caribbean Sea.
+
+    <br><br>At the southeastern corner of the Gulf, the waters begin to curve around the base of Florida’s peninsula. This zone funnels many storms northward into the Gulf, where they may intensify before heading toward the U.S. or Mexican coastlines.
+
+    <br><br>The Gulf’s nearly enclosed shape and consistently warm surface temperatures make it a prime zone for hurricane strengthening. Storms entering the Gulf often have few obstacles and may hit any part of the surrounding coasts. This makes the Gulf a crucial area for tracking changes in storm intensity and direction.
+  </p>
+  
+</body>
+</html>

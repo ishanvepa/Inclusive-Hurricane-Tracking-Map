@@ -1,0 +1,50 @@
+<button onclick="speakPage()">🔊 Listen to Page</button>
+
+<script>
+function speakPage() {
+  const content = document.body.innerText;
+  const utterance = new SpeechSynthesisUtterance(content);
+  speechSynthesis.speak(utterance);
+}
+</script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiki Map: Southeastern United States</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Southeastern United States</h1>
+  <p>
+    <i>A Regional Map for Hurricane Context</i>
+
+    <br><br>The southeastern United States forms the broad arc of land where Atlantic hurricanes often first interact with the American mainland. If you picture the lower right quadrant of the U.S. rectangle, this region includes the states of Virginia, North Carolina, South Carolina, Georgia, Florida, Alabama, Mississippi, and Louisiana.
+
+    <br><br>The region begins in Virginia, near the midpoint of the East Coast. As you move south, the coastline curves slightly inward, forming a concave arc. North Carolina juts out slightly into the Atlantic Ocean, creating a coastal “elbow,” followed by South Carolina and then Georgia, which has a relatively small stretch of oceanfront.
+
+    <br><br>Below Georgia lies Florida, a defining geographic feature of the southeast. Florida’s peninsula stretches southward like a downward-pointing finger, separating the Atlantic Ocean from the Gulf of Mexico. At its tip is a chain of small islands called the Florida Keys, curving gently westward toward Cuba.
+
+    <br><br>West of Florida begins the Gulf Coast portion of the Southeast. The top part of Florida—the Panhandle—extends westward above the main peninsula and borders Alabama. Continuing west are Mississippi and Louisiana, with Louisiana wrapping around a large river delta formed by the Mississippi River. The land here is flatter, marshier, and prone to flooding, which is why hurricanes that make landfall along the Gulf Coast can cause such widespread damage.
+
+    <br><br>The region is low-lying and largely coastal, with warm, shallow waters just offshore that feed hurricane strength. This makes the Southeast one of the most hurricane-prone areas in the U.S., especially from late summer into early fall. Understanding this shape—a sweeping coastal curve with a peninsula pointing south—is essential for tracking how storms may move across or along the coastline.
+  </p>
+</body>
+</html>

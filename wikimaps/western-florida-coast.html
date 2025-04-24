@@ -1,0 +1,51 @@
+<button onclick="speakPage()">🔊 Listen to Page</button>
+
+<script>
+function speakPage() {
+  const content = document.body.innerText;
+  const utterance = new SpeechSynthesisUtterance(content);
+  speechSynthesis.speak(utterance);
+}
+</script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wiki Map: Western Florida Coast</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Western Florida Coast</h1>
+  <p>
+    <i>A Linear Coastline with High Impact Potential</i>
+
+    <br><br>The western coast of Florida runs along the eastern edge of the Gulf of Mexico, beginning at the base of the Florida Panhandle and continuing southward down the entire length of the peninsula.
+
+    <br><br>In the north, the coastline starts with the Panhandle—Florida’s flat, horizontal top section—which borders Alabama. From there, the western coastline curves gently downward, hugging the Gulf. This coast passes through major cities like Pensacola, Panama City, and further south, Tampa and Fort Myers.
+
+    <br><br>Unlike the Atlantic coast of Florida, which is relatively straight, the Gulf side is more irregular and marshy, with inlets, bays, and barrier islands. The coastline narrows as it approaches the lower third of the state, where the land becomes less developed and more swamp-like, eventually giving way to the Everglades.
+
+    <br><br>Because the Gulf waters are shallow and warm, hurricanes that move across the Gulf and strike western Florida often bring significant storm surge. The shape of the coastline amplifies the surge effect, especially around the Tampa Bay region.
+
+    <br><br>This coast is also where hurricanes may pass over Florida, crossing from west to east, or veer northward along the coast before turning inland. The western Florida coast serves as a gateway between Gulf-spawned hurricanes and their movement inland toward the Southeastern U.S.
+
+  </p>
+</body>
+</html>
