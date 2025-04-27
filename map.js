@@ -60,7 +60,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 };
 
 ;(async () => {
-
   let glossaryNotification = false;
 
 
@@ -223,6 +222,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           type: "mapline",
           lineWidth: 3,
           color: "#000000",
+          zIndex: 2,
           legendSymbolColor: "#d22",
           data: [
             {
@@ -238,6 +238,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           id: 'user-locations',  
           name: "User Locations",
           type: "mappoint",
+          zIndex: 5,
           visible: true,
           tooltip: {
             useHTML: true,
@@ -258,7 +259,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
             fillColor: "#00008B",
             lineColor: "#00008B",
             lineWidth: 1,
-            radius: 4
+            radius: 4,
           },
           data: [] // starts empty
         },
@@ -267,6 +268,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           name: "Hurricane Path Markers",
           type: "mappoint",
           visible: false,
+          zIndex: 3,
           dataLabels: {
             format: "{point.time}",
           }, 
@@ -317,37 +319,42 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
               }
             };
           }),
-        },
-        //Cone
-        {
-          name: "Cone of uncertainty",
-          type: "map",
-          color: '#ffafafa7',
-          borderColor: '#f88',
-          dashStyle: 'dot',
-          data: [
-            {
-                // SVG path - using absolute SVG coordinate values (not lat/lon).
-              /* 
-                  You can also define map data here, using GeoJSON or TopoJSON,
-                  which will let you use lat/lon coordinates. Beware that you also
-                  then need to deal with map projections. GeoJSON must be
-                  preprojected, while with TopoJSON you (probably) should copy the
-                  projection information from the base map TopoJSON.
-              */
-                path: "M8,30L4,37L1,40L15,40L12,38L9,30Z"
-            }
-          ],
-        },
+        },    
       ],
-    }
-    
-    );
+    });
+
+    const coneTopo = await fetch("al142018-010A_5day_pgn.json").then(r => r.json());
+
+    // Convert TopoJSON to GeoJSON
+    const coneGeo = window.topojson.feature(coneTopo, coneTopo.objects["al142018-010A_5day_pgn"]);
+
+    console.log(coneGeo);
+
+    // Add Cone as a new series
+    chart.addSeries({
+        name: "Cone of Uncertainty",
+        type: "map", // important: it's "map" not "polygon" in Highcharts Maps
+        lineWidth: 3,
+        tooltip:{
+          enabled: false,
+          animation: false
+        },
+        color: "#cc0000",
+        opacity: 0.5,
+        legendSymbolColor: "#d22",
+        data: coneGeo.features.map(f => ({
+            geometry: f.geometry,
+            properties: f.properties,
+        })),
+        mapData: coneGeo,
+        zIndex: 0,
+        joinBy: null // Important: no need to join by 'hc-key' or anything
+    });
 
     // hide the forecast path and risk markers so they don't appear on load.
     const forecastPathSeries = chart.series.find(s => s.name === "Hurricane Path");
     const riskMarkersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
-    const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+    const coneSeries = chart.series.find(s => s.name === "Cone of Uncertainty");
 
 
     if (forecastPathSeries) {
@@ -446,9 +453,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       button.style.display = 'inline-block';
     });
   }
-  
-  
-  
 
   // Setup for glossary, POI, and layers buttons
   setupToggle('glossary-button', 'glossary-popup');
@@ -462,7 +466,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         
         // Toggle associated series or popup as before:
         if (layerName === 'cone') {
-          const coneSeries = chart.series.find(s => s.name === "Cone of uncertainty");
+          const coneSeries = chart.series.find(s => s.name === "Cone of Uncertainty");
           if (coneSeries) {
             coneSeries.setVisible(e.target.checked, false);
             chart.redraw();
@@ -493,14 +497,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         updateGlossary();
       });
     });
-    
-    
-    
-    
-    
-    
-    
-    
 
     // Update popup positions
     function updatePopupPositions() {
