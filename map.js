@@ -162,7 +162,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     exporting: {
       enabled: false // Disables exporting options, including the hamburger menu
     },
-
+    
     legend: {
       enabled: false, //using our own legend implementation
       align: "right",
@@ -216,6 +216,15 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           borderColor: "#888",
           mapData: usa,
         },
+        //satellite openstreetview base map
+        {
+            type: 'tiledwebmap',
+            name: 'Basemap Tiles',
+            provider: {
+                type: 'OpenStreetMap'
+            },
+            showInLegend: false
+        },
         // Coastline
         {
           name: "Hurricane Path",
@@ -224,6 +233,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           color: "#000000",
           zIndex: 2,
           legendSymbolColor: "#d22",
+          enableMouseTracking: false,
           data: [
             {
               geometry: {
@@ -337,8 +347,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         lineWidth: 3,
         tooltip:{
           enabled: false,
-          animation: false
         },
+        enableMouseTracking: false,
         color: "#cc0000",
         opacity: 0.5,
         legendSymbolColor: "#d22",
@@ -405,6 +415,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           formatter: function () {
             return `<div class="pulse-marker"></div>`;
           }
+        },
+        tooltip: {
+          pointFormat: 'Risk level: Medium'
         },
         keys: ["lat", "lon"],
         data: [
