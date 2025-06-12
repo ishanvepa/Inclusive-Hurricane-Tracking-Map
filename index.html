@@ -1,3 +1,16 @@
+<!-- TODO
+bugs 
+  - 'x' tags on layers 
+  - icons in forecast path legend
+
+tabable interface
+  - glossary cant scroll
+  - no highlighting around key icons
+  
+interface
+  - edits to match figma
+-->
+
 <!DOCTYPE html>
 <title>
   Inclusive Hurricane Tracking Map
@@ -23,19 +36,19 @@
 
 
   <!-- glossary -->
-<button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;">
-  <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
+  <button class="corner-button" id="glossary-button" style="top:auto; right:auto; bottom:10px; left: 10px;" aria-label="Open glossary" tabindex="0">
+    <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
   <!-- Notification badge -->
   <span id="glossary-notification"></span>
 </button>
 
 <div class="button-popup-wrapper" id="glossary-wrapper">
-  <div class="popup" id="glossary-popup">
-    <button class="close-popup" data-target="glossary">✖</button>
-    <!-- Fixed header area -->
+  <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-header" aria-modal="true" tabindex="-1">
+    <button class="close-popup" data-target="glossary" aria-label="Close glossary">✖</button>
     <div id="glossary-header">
-      <h2>Glossary</h2>
+      <h2 id="glossary-title">Glossary</h2>
     </div>
+  
     <!-- Scrollable container for definitions -->
     <div id="glossary-content-container">
       <div id="glossary-content">
@@ -50,21 +63,22 @@
 
     
     <!-- Points of interest  -->
-    <button class="corner-button" id="poi-button" style="right:auto; left:10px;">
+    <button class="corner-button" id="poi-button" style="right:auto; left:10px;" aria-label="Open points of interest" tabindex="0">
       <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
     </button>
   </div>
 
   <div class="button-popup-wrapper" style="position: absolute; top: 10px; left: 10px;">
-      <div class="popup" id="poi-popup">
-        <button class="close-popup" data-target="poi">✖</button>
-        <h2>Click on a location on the map to explore more details or type in a location here:</h2>
-          <input type="text" id="location-input" placeholder="Enter an address">
-          <button id="current-location">Use Current Location</button>
-          <button  id="add-location">Add Location</button>
-          <div id="message"></div>
-      </div>
-    </div>
+    <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
+      <button class="close-popup" data-target="poi" aria-label="Close points of interest">✖</button>
+      <h2 id="poi-title">Click on a location on the map to explore more details or type in a location here:</h2>
+      <label for="location-input" class="visually-hidden">Enter address</label>
+      <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
+      <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
+      <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
+      <div id="message" role="status" aria-live="polite" tabindex="0"></div>
+    </div>    
+  </div>
     
 
     
@@ -72,14 +86,15 @@
     
 
     <!-- layers -->
-    <button class="corner-button" id="layers-button">
+    <button class="corner-button" id="layers-button" aria-label="Toggle map layers" tabindex="0">
       <img src="media/layers.png" alt="Layers" width="25" height="25" />
     </button>
 
     <div class="button-popup-wrapper" style="position: absolute; top: 10px; right: 295px;">
-      <div class="popup" id="layers-popup">
-        <button class="close-popup" data-target="layers">✖</button>
+      <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
+        <button class="close-popup" data-target="layers" aria-label="Close layers panel">✖</button>
         <div class="popup-content">
+          <h2 id="layers-title" class="visually-hidden">Map Layers</h2>
           <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
           <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
          <!-- <label><input type="checkbox" class="layer-checkbox" data-layer="risk"> Risk Zones</label><br /> -->
@@ -88,10 +103,10 @@
       </div>
     </div>
     
-    <div id="map-container"></div>
+    <div id="map-container" role="application" aria-label="Interactive hurricane tracking map" tabindex="0"></div>
     
     <!-- forecast path legend -->
-    <div class="layer-popup" id="popup-path">
+    <div class="layer-popup" id="popup-path" tabindex="0" aria-label="Forecast path legend panel">
       <h3>Forecast Path Legend</h3>
       <div style="padding: 10px;">
         <div class="legend-container">
@@ -131,7 +146,7 @@
     <!--<div class="layer-popup" id="popup-risk">Risk Zones content here</div>-->
 
     <!-- Wiki Maps pop up -->
-<div class="layer-popup" id="popup-wiki">
+<div class="layer-popup" id="popup-wiki" tabindex="0" aria-label="Wiki maps panel">
   <h3>Wiki Maps</h3>
   <div class="wiki-container">
     <div class="wiki-item">
