@@ -267,11 +267,12 @@ z-index: 10;
     position: absolute;
     top: 10px;
     right: 10px;
+    height: auto;  
     background-color: rgba(0, 0, 0, 0.75);
     border-radius: 40px;
     display: flex;
     align-items: center;
-    padding: 6px 10px;
+    padding: 6px 6px;
     gap: 24px;
     box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
     z-index: 1000;
@@ -296,6 +297,7 @@ z-index: 10;
     display: block;
     width: auto;
     height: 24px;
+    padding: 2px 2px;
   }
   
   .zoom-button {
