@@ -136,16 +136,11 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
   Highcharts.setOptions({
     mapNavigation: {
-      buttonOptions: {
-        theme: {
-          symbolStroke: '#ffffff', // this sets the + / - color
-          symbolFill: '#ffffff',
-          style: {
-            color: '#ffffff'
-          }
-        }
-      }
+      enabled: true,
+      enableButtons: false
     }
+    
+    
   });
 
   const chart = Highcharts.mapChart("map-container", {
@@ -189,22 +184,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
     mapNavigation: {
       enabled: true,
-      enableButtons: true,
-      buttonOptions: {
-        align: 'right',
-        verticalAlign: 'bottom',
-        x: -10,
-        y: -10,
-        theme: {
-          fill: 'rgba(0,0,0,0.75)', // semi-transparent background
-          stroke: 'rgba(0,0,0,0.75)',
-          style: {
-            color: '#ffffff', // bright white icon/text
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }
-        }
-      }
+      enableButtons: false,
+      
     },
 
       series: [
@@ -333,6 +314,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       ],
     });
 
+
     const coneTopo = await fetch("al142018-010A_5day_pgn.json").then(r => r.json());
 
     // Convert TopoJSON to GeoJSON
@@ -382,51 +364,51 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
 
     //handle current user location marker
-  document.getElementById("current-location").addEventListener("click", async () => {
-    const userLocation = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const coords = {
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          };
-          resolve(coords);
-        },
-        err => {
-          console.error("Geolocation error:", err);
-          resolve(null); // or reject(err);
-        }
-      );
-    });
-  
-    if (userLocation) {
-      console.log("User location:", userLocation);
-  
-      chart.addSeries({
-        name: "Current User Location",
-        type: "mappoint",
-        color: "#0384fc",
-        marker: {
-          enabled: false
-        },
-        dataLabels: {
-          enabled: true,
-          useHTML: true,
-          formatter: function () {
-            return `<div class="pulse-marker"></div>`;
+    document.getElementById("current-location").addEventListener("click", async () => {
+      const userLocation = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const coords = {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            };
+            resolve(coords);
+          },
+          err => {
+            console.error("Geolocation error:", err);
+            resolve(null); // or reject(err);
           }
-        },
-        tooltip: {
-          pointFormat: 'Risk level: Medium'
-        },
-        keys: ["lat", "lon"],
-        data: [
-          [userLocation.lat, userLocation.lon],
-        ],
+        );
       });
-    } else {
-      alert("Unable to retrieve your location.");
-    }
+  
+      if (userLocation) {
+        console.log("User location:", userLocation);
+    
+        chart.addSeries({
+          name: "Current User Location",
+          type: "mappoint",
+          color: "#0384fc",
+          marker: {
+            enabled: false
+          },
+          dataLabels: {
+            enabled: true,
+            useHTML: true,
+            formatter: function () {
+              return `<div class="pulse-marker"></div>`;
+            }
+          },
+          tooltip: {
+            pointFormat: 'Risk level: Medium'
+          },
+          keys: ["lat", "lon"],
+          data: [
+            [userLocation.lat, userLocation.lon],
+          ],
+        });
+      } else {
+        alert("Unable to retrieve your location.");
+      }
   });
   
   //allow for map export
@@ -445,6 +427,35 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     chart.setSize(container.offsetWidth, container.offsetHeight, false); // Set the chart size manually
   });
 
+  // Function to position taskbar just below chart title
+function positionTaskbarBelowTitle() {
+  const chartContainer = document.getElementById('map-container');
+  const taskbar = document.getElementById('taskbar');
+  const title = chartContainer.querySelector('.highcharts-title');
+
+  if (title && taskbar) {
+    const titleBBox = title.getBBox();
+    const titleBottom = titleBBox.y + titleBBox.height;
+    taskbar.style.top = `${titleBottom + 20}px`; // 10px padding below title
+  }
+}
+
+// Call once after chart renders
+positionTaskbarBelowTitle();
+
+// Handle resizing the map and reposition taskbar
+window.addEventListener('resize', () => {
+  const container = document.getElementById('map-container');
+  const chart = Highcharts.charts[0];
+  chart.setSize(container.offsetWidth, container.offsetHeight, false);
+  positionTaskbarBelowTitle(); // Recalculate taskbar position
+});
+
+
+
+
+  
+
   // Generic function to toggle buttons and popups
   function setupToggle(buttonId, popupId) {
     const button = document.getElementById(buttonId);
@@ -457,7 +468,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       notifBadge.style.display = "none";
       glossaryNotification = false;
       
-      button.style.display = 'none';
       popup.style.display = 'block';
     });
   
@@ -567,6 +577,21 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       console.error("Geocoding error:", error);
     }
   });
+
+  // Highcharts >= 10+ with mapView support
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      chart.mapView.zoomBy(1);
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      chart.mapView.zoomBy(-1);
+    });
+
+    
+
+
+
+  
   
 
 

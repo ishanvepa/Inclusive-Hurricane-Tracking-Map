@@ -38,9 +38,6 @@ html, body {
 
 }
 
-.highcharts-button-symbol {
-    fill: white !important;
-  }
   
   .popup {
     display: none;
@@ -253,7 +250,68 @@ z-index: 10;
     clip: rect(1px, 1px, 1px, 1px);
     white-space: nowrap;
   }
+
+  #map-wrapper {
+    position: relative;
+  }
+
+  .highcharts-title {
+    font-size: 20px !important; /* or whatever you want */
+    font-weight: bold;
+    white-space: nowrap;  /* prevent line breaks */
+  }
   
+  
+  #taskbar {
+
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 24px;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
+    z-index: 1000;
+  }
+  
+  .taskbar-button {
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .taskbar-button:hover,
+  .taskbar-button:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    outline: none;
+  }
+  
+  .taskbar-button img {
+    display: block;
+    width: auto;
+    height: 24px;
+  }
+  
+  .zoom-button {
+    width: 32px;
+    height: 32px;
+    background-color: none;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 50%;
+    border: none;
+    text-align: center;
+    line-height: 28px;
+    padding: 0;
+    transition: background-color 0.2s ease;
+  }
   
   
     
