@@ -30,10 +30,10 @@ html, body {
   right: 10px;
   height: auto;
   background-color: rgba(0, 0, 0, 0.75);
-  border-radius: 40px;
+  border-radius: 20px !important;
   display: flex;
   align-items: center;
-  padding: 6px;
+  padding: 0px 20px;
   gap: 24px;
   box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
   z-index: 1000;
@@ -62,18 +62,19 @@ html, body {
 }
 
 .zoom-button {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: auto;
   color: white;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 50%;
+  border-radius: 8px; /* match .taskbar-button */
+  padding: 6px;
+  background: none;
   border: none;
-  text-align: center;
-  line-height: 28px;
-  padding: 0;
   transition: background-color 0.2s ease;
 }
+
+
 
 /* ====== Popups (Glossary, Layers, POI) ====== */
 .popup {
@@ -82,7 +83,7 @@ html, body {
   background: rgba(0, 0, 0, 0.75);
   color: white;
   padding: 1em;
-  border-radius: 8px;
+  border-radius: 20px;
   z-index: 999;
   width: 250px;
 }
@@ -111,13 +112,62 @@ html, body {
   color: white;
   align-items: center;
   padding: 0.2em 1em;
-  border-radius: 8px;
+  border-radius: 20px;
   z-index: 999;
   width: 280px;
   max-height: 80vh;
   overflow-y: auto;
   box-sizing: border-box;
 }
+
+#poi-popup {
+  width: 240px;
+  padding: 1em;
+  font-size: 0.9em;
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+}
+
+#poi-title {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 0.75em;
+  line-height: 1.2em;
+}
+
+#location-input {
+  width: 100%;
+  padding: 0.5em 0.75em;
+  font-size: 0.9em;
+  border: none;
+  border-radius: 20px;
+  margin-bottom: 0.75em;
+  box-sizing: border-box;
+}
+
+#current-location,
+#add-location {
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: underline;
+  font-size: 0.85em;
+  margin: 0.25em;
+  cursor: pointer;
+}
+
+#current-location:hover,
+#add-location:hover {
+  text-decoration: none;
+}
+
+#message {
+  font-size: 9px !important;
+  margin-top: 0.25em;
+}
+
 
 /* ====== Legend Styling ====== */
 .legend-container {
@@ -166,15 +216,17 @@ html, body {
 /* ====== Glossary Popup ====== */
 #glossary-popup {
   position: fixed;
-  bottom: 10px;
+  bottom: 20px;
   left: 10px;
   max-height: 370px;
   max-width: 400px;
   background: rgba(0, 0, 0, 0.75);
   color: white;
-  border-radius: 8px;
+  border-radius: 15px;
   z-index: 999;
-  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  overflow: hidden; /* prevent the header from scrolling */
 }
 
 #glossary-button {
@@ -189,18 +241,23 @@ html, body {
 }
 
 #glossary-header {
-  padding: 0;
+  padding: 0px;
   background: rgba(0, 0, 0, 0);
   border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0; /* keep it from shrinking */
 }
 
 #glossary-content-container {
-  height: calc(370px - 30px);
-  overflow-y: scroll;
-  padding: 0;
-  padding-bottom: 20px;
+  height: 100%;
+  max-height: calc(370px - 50px); /* adjust based on header height */
+  overflow-y: auto;
+  padding: 10px;
   box-sizing: border-box;
 }
+
 
 .glossary-icon-wrapper {
   position: relative;
@@ -215,10 +272,10 @@ html, body {
   right: -2px;
   width: 10px;
   height: 10px;
-  background-color: red;
+  background-color: rgba(255, 0, 0, 0.9);
   border-radius: 50%;
-  display: block !important;
-  z-index: 5;
+  display: block;
+  z-index: 9999;
   pointer-events: none;
 }
 
@@ -234,6 +291,7 @@ html, body {
   animation: pulse 1.5s infinite;
   z-index: 10;
 }
+
 
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0.4); }

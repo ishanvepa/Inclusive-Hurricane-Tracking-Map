@@ -1,16 +1,3 @@
-<!-- TODO
-bugs 
-  - 'x' tags on layers 
-  - icons in forecast path legend
-
-tabable interface
-  - glossary cant scroll
-  - no highlighting around key icons
-  
-interface
-  - edits to match figma
--->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -73,7 +60,7 @@ interface
         <div class="button-popup-wrapper" style="position: absolute; top: 60px; left: 0;">
           <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
             <button class="close-popup" data-target="poi" aria-label="Close points of interest">✖</button>
-            <h2 id="poi-title">Click on a location on the map to explore more details or type in a location here:</h2>
+            <h2 id="poi-title">Add a location to explore<br />more details</h2>
             <label for="location-input" class="visually-hidden">Enter address</label>
             <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
             <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>

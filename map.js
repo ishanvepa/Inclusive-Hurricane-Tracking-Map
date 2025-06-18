@@ -90,7 +90,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   function updateGlossary() {
     const container = document.getElementById("glossary-content");
     let html = "<h2></h2>";
+    let hasDefinitions = false;
     const checkboxes = document.querySelectorAll('.layer-checkbox');
+  
     checkboxes.forEach(cb => {
       const layer = cb.dataset.layer;
       if (cb.checked && glossaryTerms[layer]) {
@@ -100,14 +102,22 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
         });
         html += `</ul>`;
+        hasDefinitions = true;
       }
     });
+  
     container.innerHTML = html;
-
+  
     const glossaryPopup = document.getElementById("glossary-popup");
     const notifBadge = document.getElementById("glossary-notification");
-    notifBadge.style.display = glossaryNotification && glossaryPopup.style.display !== "block" ? "block" : "none";
+  
+    // Show red dot only if new layer was toggled AND glossary is closed
+    notifBadge.style.display = glossaryNotification && glossaryPopup.style.display !== "block"
+      ? "block"
+      : "none";
   }
+  
+  
 
   // Load hurricane and basemap data
   const hurricane_path = await loadCSV("hurricane_michael_data.csv");
@@ -239,15 +249,17 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const popup = document.getElementById(popupId);
     const closeBtn = popup.querySelector('.close-popup');
     button.addEventListener('click', () => {
-      document.getElementById("glossary-notification").style.display = "none";
       glossaryNotification = false;
+      document.getElementById("glossary-notification").style.display = "none";
       popup.style.display = 'block';
     });
+    
     closeBtn.addEventListener('click', () => {
       popup.style.display = 'none';
       button.style.display = 'inline-block';
     });
   }
+  
   setupToggle('glossary-button', 'glossary-popup');
   setupToggle('poi-button', 'poi-popup');
   setupToggle('layers-button', 'layers-popup');
