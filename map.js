@@ -248,17 +248,32 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const button = document.getElementById(buttonId);
     const popup = document.getElementById(popupId);
     const closeBtn = popup.querySelector('.close-popup');
+  
     button.addEventListener('click', () => {
-      glossaryNotification = false;
-      document.getElementById("glossary-notification").style.display = "none";
+      // Close other popups, but NEVER close the glossary
+      document.querySelectorAll('.popup').forEach(p => {
+        if (p.id !== popupId && p.id !== 'glossary-popup') {
+          p.style.display = 'none';
+        }
+      });
+  
+      // If glossary is the button clicked, remove red dot
+      if (buttonId === "glossary-button") {
+        document.getElementById("glossary-notification").style.display = "none";
+        glossaryNotification = false;
+      }
+  
+      // Show the selected popup
       popup.style.display = 'block';
     });
-    
+  
     closeBtn.addEventListener('click', () => {
       popup.style.display = 'none';
       button.style.display = 'inline-block';
     });
   }
+  
+  
   
   setupToggle('glossary-button', 'glossary-popup');
   setupToggle('poi-button', 'poi-popup');
