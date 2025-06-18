@@ -12,33 +12,38 @@ interface
 -->
 
 <!DOCTYPE html>
-<title>
-  Inclusive Hurricane Tracking Map
-</title>
-<head>
-  <link rel="stylesheet" href="styles.css"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@300;400;500;600&display=swap');
-  </style>
-</head>
-<meta charset="UTF-8"> 
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inclusive Hurricane Tracking Map</title>
 
-  <body>
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@300;400;500;600&display=swap');
+    </style>
+
+    <!-- External Libraries -->
     <script src="https://code.highcharts.com/maps/highmaps.js"></script>
     <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
     <script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
-    <script src="map.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/tiledwebmap.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
-    <script src="https://code.highcharts.com/maps/modules/tiledwebmap.js"></script>
+    <script src="map.js"></script>
+  </head>
 
+  <body>
+    <!-- Map and Interactive Controls -->
     <div id="map-wrapper" style="position: relative;">
       <div id="taskbar">
+        <!-- Layer Toggle Button -->
         <button class="taskbar-button" id="layers-button" aria-label="Toggle map layers" tabindex="0">
           <img src="media/layers.png" alt="Layers" width="25" height="25" />
         </button>
 
+        <!-- Layers Popup -->
         <div class="button-popup-wrapper" style="position: absolute; top: 60px; left: 0;">
           <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
             <button class="close-popup" data-target="layers" aria-label="Close layers panel">✖</button>
@@ -50,16 +55,21 @@ interface
             </div>
           </div>
         </div>
-      
+
+        <!-- Glossary Button -->
         <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0">
-          <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
-          <span id="glossary-notification"></span>
+          <div class="glossary-button-inner">
+            <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
+            <span id="glossary-notification"></span>
+          </div>
         </button>
-      
+
+        <!-- POI Button -->
         <button class="taskbar-button" id="poi-button" aria-label="Open points of interest" tabindex="0">
           <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
         </button>
 
+        <!-- POI Popup -->
         <div class="button-popup-wrapper" style="position: absolute; top: 60px; left: 0;">
           <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
             <button class="close-popup" data-target="poi" aria-label="Close points of interest">✖</button>
@@ -72,12 +82,13 @@ interface
           </div>
         </div>
 
+        <!-- Zoom Buttons -->
         <button class="taskbar-button zoom-button" id="zoom-in" aria-label="Zoom in">+</button>
         <button class="taskbar-button zoom-button" id="zoom-out" aria-label="Zoom out">–</button>
       </div>
     </div>
 
-
+    <!-- Glossary Popup -->
     <div class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
       <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-header" aria-modal="true" tabindex="-1">
         <button class="close-popup" data-target="glossary" aria-label="Close glossary">✖</button>
@@ -91,89 +102,36 @@ interface
         </div>
       </div>
     </div>
-  
-    
+
+    <!-- Highcharts Map Container -->
     <div id="map-container" role="application" aria-label="Interactive hurricane tracking map" tabindex="0"></div>
-    
-    <!-- forecast path legend -->
+
+    <!-- Forecast Path Legend -->
     <div class="layer-popup" id="popup-path" tabindex="0" aria-label="Forecast path legend panel">
       <h3>Forecast Path Legend</h3>
       <div style="padding: 10px;">
         <div class="legend-container">
-          <div class="legend-item">
-            <span class="symbol circle" style="color: gray;">●</span>
-            <span>TS</span>
-          </div>
-          <div class="legend-item">
-            <span class="symbol circle" style="color: white;">●</span>
-            <span>Cat 1</span>
-          </div>
-          <div class="legend-item">
-            <span class="symbol circle" style="color: #FFFF00;">●</span>
-            <span>Cat 2</span>
-          </div>
-          <div class="legend-item">
-            <span class="symbol triangle" style="color: #FFA500;">▲</span>
-            <span>Cat 3</span>
-          </div>
-          <div class="legend-item">
-            <span class="symbol square" style="color: #FF0000;">■</span>
-            <span>Cat 4</span>
-          </div>
-          <div class="legend-item">
-            <span class="symbol pentagon" style="color: #8B0000;">⬟</span>
-            <span>Cat 5</span>
-          </div>
+          <div class="legend-item"><span class="symbol circle" style="color: gray;">●</span><span>TS</span></div>
+          <div class="legend-item"><span class="symbol circle" style="color: white;">●</span><span>Cat 1</span></div>
+          <div class="legend-item"><span class="symbol circle" style="color: #FFFF00;">●</span><span>Cat 2</span></div>
+          <div class="legend-item"><span class="symbol triangle" style="color: #FFA500;">▲</span><span>Cat 3</span></div>
+          <div class="legend-item"><span class="symbol square" style="color: #FF0000;">■</span><span>Cat 4</span></div>
+          <div class="legend-item"><span class="symbol pentagon" style="color: #8B0000;">⬟</span><span>Cat 5</span></div>
         </div>
       </div>
     </div>
-    
-    
-    
 
-    
-    <!-- Risk Zones legend -->
-    <!--<div class="layer-popup" id="popup-risk">Risk Zones content here</div>-->
+    <!-- Wiki Maps Popup -->
+    <div class="layer-popup" id="popup-wiki" tabindex="0" aria-label="Wiki maps panel">
+      <h3>Wiki Maps</h3>
+      <div class="wiki-container">
+        <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
+        <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
+        <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
+        <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
+      </div>
+    </div>
 
-    <!-- Wiki Maps pop up -->
-<div class="layer-popup" id="popup-wiki" tabindex="0" aria-label="Wiki maps panel">
-  <h3>Wiki Maps</h3>
-  <div class="wiki-container">
-    <div class="wiki-item">
-      <a class="wiki-link"
-         href="wikimaps/USA.html"
-         target="_blank">
-        Base-map of United States
-      </a>
-    </div>
-    <div class="wiki-item">
-      <a class="wiki-link"
-         href="wikimaps/se-usa.html"
-         target="_blank">
-        Base-map of Southeastern United States
-      </a>
-    </div>
-    <div class="wiki-item">
-      <a class="wiki-link"
-         href="wikimaps/gulf-of-america.html"
-         target="_blank">
-        Base-map of Gulf of Mexico
-      </a>
-    </div>
-    <div class="wiki-item">
-      <a class="wiki-link"
-         href="wikimaps/western-florida-coast.html"
-         target="_blank">
-        Base-map of Western Florida Coast
-      </a>
-    </div>
-  </div>
-</div>
-
-
-    
-  
+    <!-- Removed unused Risk Zones popup -->
   </body>
-
-
 </html>

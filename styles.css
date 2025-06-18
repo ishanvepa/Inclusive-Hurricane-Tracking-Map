@@ -1,323 +1,292 @@
+/* ====== Base Layout ====== */
 #map-container {
-    height: 100%;
-    min-width: 320px;
-    max-width: 100%;
-    margin: 0 auto;
+  height: 100%;
+  min-width: 320px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; /* optional: prevents scrollbars from jumping around */
-    font-family: Inter;
-  }
-  
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: Inter;
+}
 
 .loading {
-    margin-top: 10em;
-    text-align: center;
-    color: gray;
+  margin-top: 10em;
+  text-align: center;
+  color: gray;
 }
 
-
-.corner-button {
-    position: absolute;
-    width: 50px; 
-    height: 50px;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5em;
-    background-color: rgba(0, 0, 0, 0.75);/*blue;*/
-    border: none;
-    outline: none;
-    color: white;
-    padding: 10px;
-    border-radius: 50%;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-
+#map-wrapper {
+  position: relative;
 }
 
-  
-  .popup {
-    display: none;
-    position: absolute;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 1em;
-    border-radius: 8px;
-    z-index: 999;
-    width: 250px; 
+/* ====== Taskbar Buttons ====== */
+#taskbar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  height: auto;
+  background-color: rgba(0, 0, 0, 0.75);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  gap: 24px;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
+  z-index: 1000;
+}
+
+.taskbar-button {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.taskbar-button:hover,
+.taskbar-button:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+.taskbar-button img {
+  display: block;
+  width: auto;
+  height: 24px;
+  padding: 2px;
+}
+
+.zoom-button {
+  width: 32px;
+  height: 32px;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 50%;
+  border: none;
+  text-align: center;
+  line-height: 28px;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+/* ====== Popups (Glossary, Layers, POI) ====== */
+.popup {
+  display: none;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 1em;
+  border-radius: 8px;
+  z-index: 999;
+  width: 250px;
 }
 
 .popup-content {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 .close-popup {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.2em;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
 }
 
 .layer-popup {
-    display: none;
-    position: absolute;  /* Overlay on top of the map */
-    bottom: 10px;        /* Position from the bottom-left corner */
-    right: 10px;         /* Position from the right */
-    background: rgba(0, 0, 0, 0.85);
-    color: white;
-    align-items: center;
-    padding: 0.2em 1em;
-    border-radius: 8px;
-    z-index: 999;        /* Ensure it overlays on top */
-    width: 280px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-sizing: border-box;
-  }
+  display: none;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  align-items: center;
+  padding: 0.2em 1em;
+  border-radius: 8px;
+  z-index: 999;
+  width: 280px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
 
-  /* Container for the legend items; they can wrap if needed */
+/* ====== Legend Styling ====== */
 .legend-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Adjusts space between legend items */
-    justify-content: center;
-    /* font-size: 14px; */
-  }
-  
-  /* Each individual legend item: symbol next to text */
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;  /* Space between the shape and the label */
-    white-space: nowrap; /* Prevent wrapping within this item */
-  }
-  
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
 
-/* Style for all legend symbols in the forecast path popup */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
 #popup-path span.symbol {
   display: inline-block;
-  width: 24px;         /* fixed container width */
-  height: 24px;        /* fixed container height */
-  text-align: center;  /* center horizontally */
-  line-height: 24px;   /* center vertically */
-  font-size: 20px;     /* base font size */
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  line-height: 24px;
+  font-size: 20px;
   -webkit-text-stroke: 1px white;
 }
 
-#popup-path span.triangle {
-  transform: scale(0.8);  
-}
-
+#popup-path span.triangle,
 #popup-path span.pentagon {
-  transform: scale(0.8);   
+  transform: scale(0.8);
 }
 
-#popup-path span.circle{
+#popup-path span.circle {
   transform: scale(1.5);
 }
-#popup-path span.square{
-    transform: scale(1.7);
-  }
 
-  /* Remove the big default bottom margin from the h3 */
+#popup-path span.square {
+  transform: scale(1.7);
+}
+
 #popup-path h3 {
-    margin: 0;
-    padding: 2px 2px;       /* you can tweak the vertical padding as desired */
-    font-size: 1em;          /* adjust size if needed */
-  }
-  
-  /* Glossary popup container */
+  margin: 0;
+  padding: 2px;
+  font-size: 1em;
+}
+
+/* ====== Glossary Popup ====== */
 #glossary-popup {
-    position: fixed;      /* Fixed relative to the viewport */
-    bottom: 10px;         /* Constant distance from the bottom */
-    left: 10px;           /* Constant distance from the left */
-    max-height: 370px;    /* Total height of the popup */
-    max-width: 400px;     /* Allow it to extend to the right */
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    border-radius: 8px;
-    z-index: 999;
-    overflow: hidden;     /* Prevent the header from scrolling */
-  }
-  
-  /* Glossary header that always stays visible */
-  #glossary-header {
-    padding: 0px;
-    background: rgba(0, 0, 0, 0); /* Same as popup for consistency, or adjust as needed */
-    border-bottom: 1px solid #ccc;
-  }
-  
-  /* Scrollable content container */
-  #glossary-content-container {
-    height: calc(370px - 30px); /* For example, if your header is ~50px tall */
-    overflow-y: scroll;         /* Always show (or at least reserve space for) the scrollbar */
-    padding: 0px;
-    padding-bottom: 20px;
-    box-sizing: border-box;
-  }
-  
-  #glossary-notification {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    background-color: red;
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
-    display: none; /* hidden by default */
-  }
-  
-  
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  max-height: 370px;
+  max-width: 400px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  border-radius: 8px;
+  z-index: 999;
+  overflow: hidden;
+}
+
+#glossary-button {
+  position: relative;
+}
+
+.glossary-button-inner {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+#glossary-header {
+  padding: 0;
+  background: rgba(0, 0, 0, 0);
+  border-bottom: 1px solid #ccc;
+}
+
+#glossary-content-container {
+  height: calc(370px - 30px);
+  overflow-y: scroll;
+  padding: 0;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.glossary-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}
+
+#glossary-notification {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  display: block !important;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ====== POI Marker ====== */
 .pulse-marker {
-width: 16px;
-height: 16px;
-background: #0384fc;
-border-radius: 50%;
-border: 2px solid white; /* White border */
-position: absolute;
-transform: translate(-50%, -50%);
-animation: pulse 1.5s infinite;
-z-index: 10;
+  width: 16px;
+  height: 16px;
+  background: #0384fc;
+  border-radius: 50%;
+  border: 2px solid white;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s infinite;
+  z-index: 10;
 }
 
 @keyframes pulse {
-0% {
-    box-shadow: 0 0 0 0 rgba(3, 132, 252, 0.4);
-}
-70% {
-    box-shadow: 0 0 0 15px rgba(3, 132, 252, 0);
-}
-100% {
-    box-shadow: 0 0 0 0 rgba(3, 132, 252, 0);
-}
+  0% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(3, 132, 252, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0); }
 }
 
 #message {
-    font-size: 12px; /* Change 18px to the desired size */
-  }
+  font-size: 12px;
+}
 
-  /* tighten up the popup header */
+/* ====== Wiki Panel ====== */
 #popup-wiki h3 {
-    margin: 0;
-    padding: 6px 10px;
-    font-size: 1em;
-    text-align: center;
-  }
-  
-  /* container around all items */
-  .wiki-container {
-    padding: 8px 10px;
-  }
-  
-  /* each row */
-  .wiki-item {
-    margin-bottom: 0.75em;
-  }
-  
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 1em;
+  text-align: left;
+}
 
-  /* Remove the positioning & padding since we’ll flow the icon inline */
+.wiki-container {
+  padding: 8px 10px;
+}
+
+.wiki-item {
+  margin-bottom: 0.75em;
+}
+
 .wiki-link {
-    color: #fff;
-    text-decoration: underline;
-  }
-  
-  /* Use an inline SVG icon after the link text */
-  .wiki-link::after {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M14 3h7v7h-2V6.414l-9.293 9.293-1.414-1.414L17.586 5H14V3z'/%3E%3Cpath fill='%23fff' d='M5 5h5V3H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5h-2v5H5V5z'/%3E%3C/svg%3E");
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 4px;      /* gap between text and icon */
-    width: 1em;
-    height: 1em;
-  }
-  
-  /* Force the Wiki Maps heading back to left alignment */
-#popup-wiki h3 {
-    text-align: left;
-  }
+  color: #fff;
+  text-decoration: underline;
+}
 
-  .visually-hidden {
-    position: absolute !important;
-    height: 1px; width: 1px;
-    overflow: hidden;
-    clip: rect(1px, 1px, 1px, 1px);
-    white-space: nowrap;
-  }
+.wiki-link::after {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M14 3h7v7h-2V6.414l-9.293 9.293-1.414-1.414L17.586 5H14V3z'/%3E%3Cpath fill='%23fff' d='M5 5h5V3H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5h-2v5H5V5z'/%3E%3C/svg%3E");
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  width: 1em;
+  height: 1em;
+}
 
-  #map-wrapper {
-    position: relative;
-  }
+/* ====== Accessibility ====== */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
 
-  .highcharts-title {
-    font-size: 20px !important; /* or whatever you want */
-    font-weight: bold;
-    white-space: nowrap;  /* prevent line breaks */
-  }
-  
-  
-  #taskbar {
-
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    height: auto;  
-    background-color: rgba(0, 0, 0, 0.75);
-    border-radius: 40px;
-    display: flex;
-    align-items: center;
-    padding: 6px 6px;
-    gap: 24px;
-    box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
-    z-index: 1000;
-  }
-  
-  .taskbar-button {
-    background: none;
-    border: none;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  
-  .taskbar-button:hover,
-  .taskbar-button:focus {
-    background-color: rgba(255, 255, 255, 0.15);
-    outline: none;
-  }
-  
-  .taskbar-button img {
-    display: block;
-    width: auto;
-    height: 24px;
-    padding: 2px 2px;
-  }
-  
-  .zoom-button {
-    width: 32px;
-    height: 32px;
-    background-color: none;
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 50%;
-    border: none;
-    text-align: center;
-    line-height: 28px;
-    padding: 0;
-    transition: background-color 0.2s ease;
-  }
-  
-  
-    
-
-  
-  
-  
+.highcharts-title {
+  font-size: 20px !important;
+  font-weight: bold;
+  white-space: nowrap;
+}
