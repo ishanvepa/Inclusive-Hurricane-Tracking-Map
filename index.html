@@ -18,33 +18,42 @@
     <script src="https://code.highcharts.com/maps/modules/tiledwebmap.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/topojson-client@3"></script>
-    <script src="map.js"></script>
   </head>
 
   <body>
     <!-- Map and Interactive Controls -->
     <div id="map-wrapper" style="position: relative;">
       <div id="taskbar">
+
         <!-- Layer Toggle Button -->
-        <button class="taskbar-button" id="layers-button" aria-label="Toggle map layers" tabindex="0">
+        <button class="taskbar-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle storm-related layers on the map" tabindex="0">
           <img src="media/layers.png" alt="Layers" width="25" height="25" />
         </button>
 
         <!-- Layers Popup -->
         <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
           <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
-            <button class="close-popup" data-target="layers" aria-label="Close layers panel">✖</button>
+            <div class="popup-header">
+              <div class="popup-heading">
+                <img src="media/layers.png" alt="" class="popup-icon" width="18" height="18" />
+                <h2 id="layers-title" class="popup-title">Map Layers</h2>
+              </div>
+              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+                <img src="media/close.svg" alt="" width="18" height="18" />
+              </button>
+            </div>  
+
+
             <div class="popup-content">
-              <h2 id="layers-title" >Map Layers</h2>
               <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
               <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Forecast Path</label><br />
-              <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label>
+              <!-- <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label> -->
             </div>
           </div>
         </div>
 
         <!-- Glossary Button -->
-        <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0">
+        <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0" data-tooltip="View hurricane-related terms and definitions">
           <div class="glossary-button-inner">
             <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
             <span id="glossary-notification"></span>
@@ -52,43 +61,99 @@
         </button>
 
         <!-- POI Button -->
-        <button class="taskbar-button" id="poi-button" aria-label="Open points of interest" tabindex="0">
+        <button class="taskbar-button" id="poi-button" aria-label="Open points of interest" tabindex="0" data-tooltip="Search or add locations to the map">
           <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
         </button>
 
         <!-- POI Popup -->
         <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
           <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
-            <button class="close-popup" data-target="poi" aria-label="Close points of interest">✖</button>
-            <h2 id="poi-title">Add a location to explore<br />more details</h2>
-            <label for="location-input" class="visually-hidden">Enter address</label>
-            <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
-            <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
-            <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
-            <div id="message" role="status" aria-live="polite" tabindex="0"></div>
+            <div class="popup-header">
+              <div class="popup-heading">
+                <img src="media/poi.png" alt="" class="popup-icon" width="15" height="18" />
+                <h2 id="poi-title" class="popup-title">Locations</h2>
+              </div>
+              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+                <img src="media/close.svg" alt="" width="18" height="18" />
+              </button>
+            </div>            
+
+            <div class="popup-content">
+              <p>Add a location to explore more details</p>
+              <label for="location-input" class="visually-hidden">Enter address</label>
+              <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
+              <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
+              <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
+              <div id="message" role="status" aria-live="polite" tabindex="0"></div>
+            </div>
+
+          </div>
+        </div>
+        
+         <!-- Wiki Button -->
+        <button class="taskbar-button" id="wiki-button" aria-label="Open Wiki Maps Options" tabindex="0" data-tooltip="Explore written descriptions of each region on the map">
+          <img src="media/information.png" alt="wiki" width="25" height="25" />
+        </button>
+
+        <!-- wiki Popup -->
+        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+          <div class="popup" id="wiki-popup" role="dialog" aria-labelledby="wiki-title" aria-modal="true" tabindex="-1">
+            <div class="popup-header">
+              <div class="popup-heading">
+                <img src="media/information.png" alt="" class="popup-icon" width="18" height="18" />
+                <h2 id="wiki-title" class="popup-title">Wiki Maps</h2>
+              </div>
+              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+                <img src="media/close.svg" alt="" width="18" height="18" />
+              </button>
+            </div>  
+
+
+            <div class="popup-content">
+              <div class="wiki-container">
+              <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
+              <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
+              <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
+              <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
+            </div>
+            </div>
           </div>
         </div>
 
         <!-- Zoom Buttons -->
-        <button class="taskbar-button zoom-button" id="zoom-in" aria-label="Zoom in">+</button>
-        <button class="taskbar-button zoom-button" id="zoom-out" aria-label="Zoom out">–</button>
+        <button class="taskbar-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">–</button>
+        <button class="taskbar-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
       </div>
     </div>
 
     <!-- Glossary Popup -->
     <div class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
-      <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-header" aria-modal="true" tabindex="-1">
-        <button class="close-popup" data-target="glossary" aria-label="Close glossary">✖</button>
+      <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-title" aria-modal="true" tabindex="-1">
+        
+        <!-- Close button in top-right corner -->
+        <button class="close-popup glossary-close" data-target="glossary" aria-label="Close glossary">
+          <img src="media/close.svg" alt="" width="18" height="18" />
+        </button>
+
+        <!-- Glossary Header -->
         <div id="glossary-header">
-          <h2 id="glossary-title">Glossary</h2>
+          <div class="popup-heading">
+            <img src="media/glossary.png" alt="Glossary icon" class="glossary-icon" />
+            <h2 id="glossary-title">Glossary</h2>
+          </div>
+          <hr />
         </div>
+
+        <!-- Glossary Content -->
         <div id="glossary-content-container">
           <div id="glossary-content">
             <!-- Glossary terms will be injected here -->
           </div>
         </div>
+
       </div>
     </div>
+
 
     <!-- Highcharts Map Container -->
     <div id="map-container" role="application" aria-label="Interactive hurricane tracking map" tabindex="0"></div>
@@ -108,7 +173,7 @@
       </div>
     </div>
 
-    <!-- Wiki Maps Popup -->
+    <!-- Wiki Maps Popup 
     <div class="layer-popup" id="popup-wiki" tabindex="0" aria-label="Wiki maps panel">
       <h3>Wiki Maps</h3>
       <div class="wiki-container">
@@ -118,7 +183,9 @@
         <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
       </div>
     </div>
+    -->
 
     <!-- Removed unused Risk Zones popup -->
   </body>
+  <script src="map.js" defer></script>
 </html>

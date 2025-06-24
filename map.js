@@ -250,34 +250,47 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const closeBtn = popup.querySelector('.close-popup');
   
     button.addEventListener('click', () => {
-      // Close other popups, but NEVER close the glossary
+      const isVisible = popup.style.display === 'block';
+  
+      // Close all other popups and remove active classes
       document.querySelectorAll('.popup').forEach(p => {
-        if (p.id !== popupId && p.id !== 'glossary-popup') {
+        if (p.id !== 'glossary-popup') {
           p.style.display = 'none';
         }
       });
+      document.querySelectorAll('.taskbar-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
   
-      // If glossary is the button clicked, remove red dot
       if (buttonId === "glossary-button") {
         document.getElementById("glossary-notification").style.display = "none";
         glossaryNotification = false;
       }
   
-      // Show the selected popup
-      popup.style.display = 'block';
+      if (isVisible) {
+        popup.style.display = 'none';
+        button.classList.remove('active');
+        button.blur(); // ← removes focus so gray background goes away
+      } else {
+        popup.style.display = 'block';
+        button.classList.add('active');
+      }
     });
   
     closeBtn.addEventListener('click', () => {
       popup.style.display = 'none';
-      button.style.display = 'inline-block';
+      button.classList.remove('active');
+      button.blur(); // ← same here, to remove highlight if 'X' was last clicked
     });
   }
-  
   
   
   setupToggle('glossary-button', 'glossary-popup');
   setupToggle('poi-button', 'poi-popup');
   setupToggle('layers-button', 'layers-popup');
+  setupToggle('wiki-button', 'wiki-popup');
+  
+  
 
   // Layer toggle logic
   document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
