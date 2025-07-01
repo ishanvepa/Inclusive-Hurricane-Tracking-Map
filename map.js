@@ -136,19 +136,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     title: { text: "Hurricane Michael 2018" },
     exporting: { enabled: false },
     legend: { enabled: false, align: "right", layout: "vertical", verticalAlign: "bottom", x: -20, y: -20 },
-    plotOptions: {
-      mappoint: {
-        point: {
-          events: {
-            click: function () {
-              e.preventDefault();
-              e.stopPropagation();
-              return false;
-            }
-          }
-        }
-      }
-    },
     mapNavigation: { enabled: true, enableButtons: false },
     series: [
       { name: "Base map", nullColor: "#acb", legendSymbolColor: "#acb", borderColor: "#888", mapData: usa },
@@ -166,10 +153,21 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         marker: { symbol: "circle", fillColor: "#00008B", lineColor: "#00008B", lineWidth: 1, radius: 4 },
         data: []
       },
-      { name: "Hurricane Path Markers", type: "mappoint", visible: false, zIndex: 3, dataLabels: { format: "{point.time}" },
-        tooltip: {
-          pointFormat: `<b>Classification:</b> {point.name}<br/><b>Vmax:</b> {point.vmax} knots<br/><b>MSLP:</b> {point.mslp} mb <br/>`
-        },
+      { name: "Hurricane Path Markers", type: "mappoint", visible: false, zIndex: 3, dataLabels: { enabled: false },
+      tooltip: {
+        hideDelay: 0,
+        stickOnContact: false,
+        followPointer: false,
+        shared: false,
+        useHTML: true,
+        pointFormat: `
+          <b>Time:</b> {point.time}<br/>
+          <b>Classification:</b> {point.name}<br/>
+          <b>Vmax:</b> {point.vmax} knots<br/>
+          <b>MSLP:</b> {point.mslp} mb<br/>
+        `
+      },
+        
         data: hurricane_path.map(point => {
           let symbol = 'circle';
           let color = '#FFFFFF';
@@ -186,6 +184,16 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     ]
   });
+
+  document.getElementById('map-container').addEventListener('mousemove', (e) => {
+    if (!chart.pointer.chartPosition) return;
+    const coords = chart.pointer.normalize(e);
+    if (!chart.hoverPoint || !chart.hoverPoint.graphic.element.contains(e.target)) {
+      chart.tooltip.hide();
+    }
+  });
+  
+  
 
   const addedLocations = new Map(); // key: custom id, value: { name, point }
   let locationIdCounter = 0;
@@ -346,25 +354,56 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', e => {
       const layerName = e.target.dataset.layer;
+
       if (layerName === 'cone') {
+
         const coneSeries = chart.series.find(s => s.name === "Cone of Uncertainty");
+
         if (coneSeries) coneSeries.setVisible(e.target.checked, false);
+
       }
+  
       if (layerName === 'path') {
         const path = chart.series.find(s => s.name === "Hurricane Path");
         const markers = chart.series.find(s => s.name === "Hurricane Path Markers");
+        const legend = document.getElementById('popup-path');
+        const legendCheckbox = document.querySelector('.legend-subcheckbox[data-target="path"]');
+        const subOption = document.querySelector('.legend-suboption[data-parent="path"]');
+  
         if (path && markers) {
           path.setVisible(e.target.checked, false);
           markers.setVisible(e.target.checked, false);
         }
+  
+        // Show/hide the legend and sub-option toggle
+        if (e.target.checked) {
+          if (legendCheckbox) legendCheckbox.checked = true;
+          if (legend) legend.style.display = 'block';
+          if (subOption) subOption.style.display = 'block';
+        } else {
+          if (legendCheckbox) legendCheckbox.checked = false;
+          if (legend) legend.style.display = 'none';
+          if (subOption) subOption.style.display = 'none';
+        }
       }
-      const popup = document.getElementById(`popup-${layerName}`);
-      if (popup) popup.style.display = e.target.checked ? 'block' : 'none';
-      if (e.target.checked) glossaryNotification = true;
+  
       updatePopupPositions();
       updateGlossary();
     });
   });
+
+  document.querySelectorAll('.legend-subcheckbox').forEach(subbox => {
+    subbox.addEventListener('change', e => {
+      const target = e.target.dataset.target;
+      const popup = document.getElementById(`popup-${target}`);
+      if (popup) {
+        popup.style.display = e.target.checked ? 'block' : 'none';
+      }
+      updatePopupPositions();
+    });
+  });
+  
+  
 
   // Reposition layer popups
   function updatePopupPositions() {
