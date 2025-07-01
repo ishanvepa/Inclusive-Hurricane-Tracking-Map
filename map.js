@@ -14,19 +14,19 @@ function parseCSV(csvText, delimiter = ',') {
     let cat = "";
 
     // Determine hurricane category based on wind speed
-    if (cols[7] >= 137) cat = "Category 5";
-    else if (cols[7] >= 113) cat = "Category 4";
-    else if (cols[7] >= 96) cat = "Category 3";
-    else if (cols[7] >= 83) cat = "Category 2";
-    else if (cols[7] >= 64) cat = "Category 1";
+    if (cols[6] >= 137) cat = "Category 5";
+    else if (cols[6] >= 113) cat = "Category 4";
+    else if (cols[6] >= 96) cat = "Category 3";
+    else if (cols[6] >= 83) cat = "Category 2";
+    else if (cols[6] >= 64) cat = "Category 1";
     else cat = "Tropical Storm/Depression";
 
     res.push({
-      time: cols[1],
-      lat: parseFloat(cols[5]),
-      lon: parseFloat(cols[6]),
-      vmax: parseInt(cols[7]),
-      mslp: parseInt(cols[8]),
+      time: cols[0],
+      lat: parseFloat(cols[4]),
+      lon: parseFloat(cols[5]),
+      vmax: parseInt(cols[6]),
+      mslp: parseInt(cols[7]),
       category: cat,
     });
   }
@@ -120,7 +120,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
 
   // Load hurricane and basemap data
-  const hurricane_path = await loadCSV("hurricane_michael_data.csv");
+  const hurricane_path = await loadCSV("hurricane_katrina_data.csv");
   const usa = await fetch("https://code.highcharts.com/mapdata/countries/us/us-all.topo.json").then(r => r.json());
 
   // Initialize map chart
@@ -502,7 +502,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         const point = info.point;
       
         if (point && typeof point.remove === 'function') {
-          point.remove(); // ✅ this should now actually remove the dot
+          point.remove();
         } else {
           console.warn("Couldn't find point to remove", point);
         }
