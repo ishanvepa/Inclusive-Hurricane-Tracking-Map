@@ -182,6 +182,50 @@ html, body {
   text-align: center;
 }
 
+.location-list {
+  list-style: none;       
+  padding: 0;          
+  margin-top: 10px;
+}
+
+.location-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1); 
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  color: white;          
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.location-list li span {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  line-height: 1.2;
+}
+
+
+
+.remove-location {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.remove-location:hover {
+  background: rgba(255, 255, 255, 0.15); /* subtle hover */
+}
+
+
 .popup-title {
   font-size: 1.1rem;
   font-weight: 700;

@@ -141,7 +141,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         point: {
           events: {
             click: function () {
-              if (this.series.options.id === 'user-locations') this.remove();
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
             }
           }
         }
@@ -158,7 +160,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           useHTML: true,
           hideDelay: 500,
           pointFormatter: function() {
-            return `<b>Lat:</b> ${this.lat.toFixed(4)}<br/><b>Lon:</b> ${this.lon.toFixed(4)}<br/><button onclick="removeUserLocation(${this.index})" style="margin-top:5px;padding:4px 8px;font-size:12px;">Click point to remove</button>`;
+            return `<b>Lat:</b> ${this.lat.toFixed(4)}<br/><b>Lon:</b> ${this.lon.toFixed(4)}<br/>`;
           }
         },
         marker: { symbol: "circle", fillColor: "#00008B", lineColor: "#00008B", lineWidth: 1, radius: 4 },
@@ -185,6 +187,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     ]
   });
 
+  const addedLocations = new Map(); // key: custom id, value: { name, point }
+  let locationIdCounter = 0;
+
+
   // Load and add cone of uncertainty
   const coneTopo = await fetch("al142018-010A_5day_pgn.json").then(r => r.json());
   const coneGeo = window.topojson.feature(coneTopo, coneTopo.objects["al142018-010A_5day_pgn"]);
@@ -204,17 +210,61 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     const userLocation = await new Promise(resolve => {
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-        err => (console.error("Geolocation error:", err), resolve(null))
+        err => {
+          console.error("Geolocation error:", err);
+          resolve(null);
+        }
       );
     });
+  
     if (userLocation) {
-      chart.addSeries({ name: "Current User Location", type: "mappoint", color: "#0384fc", marker: { enabled: false },
-        dataLabels: { enabled: true, useHTML: true, formatter: () => `<div class="pulse-marker"></div>` },
-        tooltip: { pointFormat: 'Risk level: Medium' }, keys: ["lat", "lon"], data: [[userLocation.lat, userLocation.lon]] });
+      const id = locationIdCounter++;
+      const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+  
+      userLocationsSeries.addPoint({
+        name: "Your Location",
+        lat: userLocation.lat,
+        lon: userLocation.lon,
+        custom: { id },
+        marker: {
+          enabled: false // hide default marker
+        },
+        dataLabels: {
+          enabled: true,
+          useHTML: true,
+          formatter: function () {
+            return `
+              <div style="
+                font-family: 'Inter', sans-serif;
+                font-size: 12px;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+              ">
+                <div class="pulse-marker"></div>
+              </div>`;
+          },
+          
+          style: {
+            textAlign: 'center'
+          }
+        },
+        tooltip: {
+          pointFormat: "This is your current location"
+        }
+      }, true, false);
+  
+      const point = userLocationsSeries.points[userLocationsSeries.points.length - 1];
+  
+      addedLocations.set(id, { name: "Your Location", point });
+      renderLocationList();
     } else {
       alert("Unable to retrieve your location.");
     }
   });
+  
+  
 
   // Map export
   $("#download_button").click(() => {
@@ -327,32 +377,110 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
   // Add marker from address lookup
   document.getElementById('add-location').addEventListener('click', async () => {
+    
     const addressInput = document.getElementById('location-input');
     const messageDiv = document.getElementById('message');
     const address = addressInput.value.trim();
+  
     if (!address) {
       messageDiv.innerText = "Please enter a valid address.";
       return;
     }
+  
     try {
       const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=7f3db94804634683a492123ae49bad8b`);
       const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        const { lat, lng } = data.results[0].geometry;
-        const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
-        if (userLocationsSeries) {
-          userLocationsSeries.addPoint({ name: address, lat, lon: lng });
+    
+      console.log("Geocoding full response:", data);
+    
+      if (data && data.results && data.results.length > 0) {
+        const geometry = data.results[0].geometry;
+    
+        if (geometry && typeof geometry.lat === "number" && typeof geometry.lng === "number") {
+          const lat = geometry.lat;
+          const lng = geometry.lng;
+          const id = locationIdCounter++;
+          const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+    
+          userLocationsSeries.addPoint({
+            name: address,
+            lat,
+            lon: lng,
+            custom: { id }
+          }, true, false); // redraw = true, shift = false
+          
+          const point = userLocationsSeries.points[userLocationsSeries.points.length - 1];
+          console.log("Manually fetched added point:", point);
+              
+          addedLocations.set(id, { name: address, point });
+          renderLocationList();
+    
+          //messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          addressInput.value = "";
+        } else {
+          console.warn("Missing or invalid geometry:", geometry);
+          messageDiv.innerText = "Geocoding failed: coordinates missing.";
         }
-        messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-        addressInput.value = "";
       } else {
+        console.warn("Geocoding failed: no results found");
         messageDiv.innerText = "Address not found. Please try again.";
       }
     } catch (error) {
-      messageDiv.innerText = "An error occurred while geocoding.";
       console.error("Geocoding error:", error);
+      messageDiv.innerText = "An error occurred while geocoding.";
     }
+    
+
   });
+
+  const addressInput = document.getElementById('location-input');
+  const messageDiv = document.getElementById('message');
+
+  addressInput.addEventListener('input', () => {
+    messageDiv.innerText = '';
+  });
+
+
+  function renderLocationList() {
+    const list = document.getElementById('location-list');
+    if (!list) return;
+  
+    list.innerHTML = '';
+  
+    addedLocations.forEach((info, id) => {
+      const li = document.createElement('li');
+      li.classList.add('location-item');
+  
+      const span = document.createElement('span');
+      span.textContent = info.name;
+  
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'x';
+      removeBtn.setAttribute('aria-label', `Remove ${info.name}`);
+      removeBtn.classList.add('remove-location');
+  
+      removeBtn.addEventListener('click', () => {
+        const point = info.point;
+      
+        if (point && typeof point.remove === 'function') {
+          point.remove(); // ✅ this should now actually remove the dot
+        } else {
+          console.warn("Couldn't find point to remove", point);
+        }
+      
+        addedLocations.delete(id);
+        renderLocationList();
+      });
+      
+  
+      li.appendChild(span);
+      li.appendChild(removeBtn);
+      list.appendChild(li);
+    });
+  }
+  
+
+  
 
   // Zoom controls
   document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
