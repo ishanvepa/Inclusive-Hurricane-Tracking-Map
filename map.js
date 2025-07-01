@@ -133,7 +133,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       reflow: false,
       panning: { enabled: true, type: "xy" },
     },
-    title: { text: "Hurricane Michael 2018" },
+    title: { text: null },
     exporting: { enabled: false },
     legend: { enabled: false, align: "right", layout: "vertical", verticalAlign: "bottom", x: -20, y: -20 },
     mapNavigation: { enabled: true, enableButtons: false },
@@ -519,7 +519,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   }
   
 
-  
+  document.getElementById("about-button").addEventListener("click", () => {
+    window.open("about.html", "_blank");
+  });
+    
 
   // Zoom controls
   document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
