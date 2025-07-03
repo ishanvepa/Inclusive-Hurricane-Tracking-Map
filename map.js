@@ -120,8 +120,77 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
 
   // Load hurricane and basemap data
-  const hurricane_path = await loadCSV("hurricane_katrina_data.csv");
+  const hurricane_path = await loadCSV("hurricane_michael_data.csv");
   const usa = await fetch("https://code.highcharts.com/mapdata/countries/us/us-all.topo.json").then(r => r.json());
+
+  const timeDropdown = document.getElementById('time-dropdown');
+  const timeToggle = document.getElementById('time-toggle');
+  let currentStartIndex = 0;
+  
+  timeToggle.addEventListener('click', () => {
+    timeDropdown.style.display = timeDropdown.style.display === 'block' ? 'none' : 'block';
+  });
+  
+  function updateHurricaneSeries() {
+    const path = chart.series.find(s => s.name === "Hurricane Path");
+    const markers = chart.series.find(s => s.name === "Hurricane Path Markers");
+  
+    const filtered = hurricane_path.slice(0, currentStartIndex + 1);
+    const lineData = [{
+      geometry: {
+        type: "LineString",
+        coordinates: filtered.map(p => [p.lon, p.lat])
+      }
+    }];
+    const pointData = filtered.map(point => {
+      let symbol = 'circle';
+      let color = '#FFFFFF';
+      if (point.vmax >= 137) { symbol = 'pentagon'; color = '#8B0000'; }
+      else if (point.vmax >= 113) { symbol = 'square'; color = '#FF0000'; }
+      else if (point.vmax >= 96) { symbol = 'triangle'; color = '#FFA500'; }
+      else if (point.vmax >= 83) { color = '#FFFF00'; }
+      else if (point.vmax < 64) { color = '#888888'; }
+  
+      return {
+        name: point.category,
+        time: point.time,
+        lat: point.lat,
+        lon: point.lon,
+        vmax: point.vmax,
+        mslp: point.mslp,
+        marker: { symbol, fillColor: color, lineColor: '#000', lineWidth: 1, radius: 10 }
+      };
+    });
+  
+    if (path) path.setData(lineData, false);
+    if (markers) markers.setData(pointData, false);
+    chart.redraw();
+  }
+  
+  // Populate the dropdown
+ // Populate dropdown with styled divs instead of <option>
+  hurricane_path.forEach((point, i) => {
+    const item = document.createElement('div');
+    item.setAttribute('role', 'option');
+    item.setAttribute('tabindex', '0');
+    item.classList.add('dropdown-item');
+    item.dataset.index = i;
+
+    const date = new Date(point.time);
+    item.textContent = date.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'
+    });
+
+    item.addEventListener('click', () => {
+      currentStartIndex = i;
+      updateHurricaneSeries();
+      timeDropdown.style.display = 'none';
+    });
+
+    timeDropdown.appendChild(item);
+  });
+
+  
 
   // Initialize map chart
   Highcharts.setOptions({
@@ -136,6 +205,19 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     title: { text: null },
     exporting: { enabled: false },
     legend: { enabled: false, align: "right", layout: "vertical", verticalAlign: "bottom", x: -20, y: -20 },
+    plotOptions: {
+      mappoint: {
+        point: {
+          events: {
+            click: function () {
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
+            }
+          }
+        }
+      }
+    },
     mapNavigation: { enabled: true, enableButtons: false },
     series: [
       { name: "Base map", nullColor: "#acb", legendSymbolColor: "#acb", borderColor: "#888", mapData: usa },
@@ -347,6 +429,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   setupToggle('poi-button', 'poi-popup');
   setupToggle('layers-button', 'layers-popup');
   setupToggle('wiki-button', 'wiki-popup');
+  
   
   
 
