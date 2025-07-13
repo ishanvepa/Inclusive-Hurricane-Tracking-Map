@@ -66,7 +66,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       ]
     },
     path: {
-      header: "Forecast Path",
+      header: "Storm Path",
       terms: [
         { term: "Track", definition: "The predicted course of the hurricane." },
         { term: "Intensity", definition: "Estimated strength along the track." }
@@ -110,6 +110,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
     const glossaryPopup = document.getElementById("glossary-popup");
     const notifBadge = document.getElementById("glossary-notification");
+
+    
   
     // Show red dot only if new layer was toggled AND glossary is closed
     notifBadge.style.display = glossaryNotification && glossaryPopup.style.display !== "block"
@@ -634,12 +636,19 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   
   
 
-  document.getElementById("about-button").addEventListener("click", () => {
-    window.open("about.html", "_blank");
-  });
     
   // Optional: focus map container for keyboard navigation
   document.getElementById('map-container').focus();
+
+  document.getElementById("about-button").addEventListener("click", () => {
+    const popup = document.getElementById("about-popup");
+    popup.style.display = "block";
+    popup.focus();
+  });
+  
+  document.querySelector("#about-popup .close-popup").addEventListener("click", () => {
+    document.getElementById("about-popup").style.display = "none";
+  });
 
 
   // Zoom controls
