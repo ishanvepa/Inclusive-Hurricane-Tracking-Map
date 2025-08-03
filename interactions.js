@@ -10,11 +10,6 @@ $(document).ready(function() {
     $("glossary-button").css("opacity", "0.5");
 
 
-
-
-
-
-
    });
 
 

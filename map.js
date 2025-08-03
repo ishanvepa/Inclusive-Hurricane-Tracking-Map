@@ -285,8 +285,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
   // Load and add cone of uncertainty
   const coneTopo = await fetch("al142018-010A_5day_pgn.json").then(r => r.json());
-  const coneGeo = window.topojson.feature(coneTopo, coneTopo.objects["al142018-010A_5day_pgn"]);
-  chart.addSeries({ name: "Cone of Uncertainty", type: "map", lineWidth: 3, tooltip: { enabled: false }, enableMouseTracking: false,
+  const coneObjectKey = Object.keys(coneTopo.objects)[0]; // dynamically get the object name
+  const coneGeo = window.topojson.feature(coneTopo, coneTopo.objects[coneObjectKey]);
+    chart.addSeries({ name: "Cone of Uncertainty", type: "map", lineWidth: 3, tooltip: { enabled: false }, enableMouseTracking: false,
     color: "#cc0000", opacity: 0.5, legendSymbolColor: "#d22", data: coneGeo.features.map(f => ({ geometry: f.geometry, properties: f.properties })),
     mapData: coneGeo, zIndex: 0, joinBy: null });
 
