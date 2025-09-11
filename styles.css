@@ -104,12 +104,12 @@ html, body {
 
 .taskbar-button:hover,
 .taskbar-button:focus {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: #005FCC;
   outline: none;
 }
 
 .taskbar-button.active {
-  background-color: rgba(255, 255, 255, 0.15); /* same as hover/focus */
+  background-color: #0077cc; 
 }
 
 

@@ -6,4 +6,4 @@ To Run:
 
 run a local server
     - in terminal path, python3 -m http.server 8080
-    - go to http://localhost:8000
+    - go to http://localhost:8080
