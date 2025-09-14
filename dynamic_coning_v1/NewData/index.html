@@ -33,25 +33,19 @@
         <div id="time-dropdown" class="dropdown-menu" role="listbox" tabindex="0" aria-label="Select a forecast time"></div>
       </div>
       
-    
       <button id="about-button" aria-label="About this page">
         <img src="media/question.svg" alt="About" />
       </button>
-    </div>
-    
-    
 
-    <div id="map-wrapper" style="position: relative;">
-      <div id="taskbar">
-
-        <!-- Layer Toggle Button -->
+      <!-- Layers toggle moved here from taskbar -->
+      <div class="title-controls">
         <button class="taskbar-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle storm-related layers on the map" tabindex="0">
           <img src="media/layers.png" alt="Layers" width="25" height="25" />
         </button>
 
         <!-- Layers Popup -->
-        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
-          <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
+        <div class="button-popup-wrapper title-popup" style="position: absolute; top: 40px; right: 280px;">
+          <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1" style="transform-origin: top right;">
             <div class="popup-header">
               <div class="popup-heading">
                 <img src="media/layers.png" alt="" class="popup-icon" width="18" height="18" />
@@ -72,10 +66,20 @@
                   Show Legend
                 </label>
               </div>
-              <!-- <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label> -->
             </div>
           </div>
         </div>
+      </div>
+
+      
+    </div>
+    
+    
+
+    <div id="map-wrapper" style="position: relative;">
+      <div id="taskbar">
+
+  <!-- Layers button moved to header (map-title-box) -->
 
         <!-- Glossary Button -->
         <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0" data-tooltip="View hurricane-related terms and definitions">

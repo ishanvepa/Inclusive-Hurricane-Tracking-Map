@@ -293,7 +293,8 @@ html, body {
 
 .dropdown-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex; /* use flex to align child vertically */
+  align-items: center;   /* center vertically with title and buttons */
   margin-left: 8px;
 }
 
@@ -314,13 +315,17 @@ html, body {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px; /* match taskbar button padding */
   margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px; /* ensure consistent height with other icons */
 }
 
 #time-toggle img {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   filter: invert(1); /* white on dark */
 }
 
