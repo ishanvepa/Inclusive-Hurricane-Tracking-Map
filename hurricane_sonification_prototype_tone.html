@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hurricane Sonification Prototype</title>
+  <!-- Tone.js -->
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+  <!-- Papa Parse for CSV -->
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    :root{--bg:#0b1220;--panel:#111a2b;--accent:#86b7ff;--muted:#9fb3c8;--text:#eaf2ff}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial,'Noto Sans','Apple Color Emoji','Segoe UI Emoji'}
+    header{padding:20px 24px;border-bottom:1px solid #1a2947;background:linear-gradient(180deg,#0d1526,transparent)}
+    h1{font-size:20px;margin:0 0 4px}
+    .sub{color:var(--muted);font-size:13px}
+    main{display:grid;grid-template-columns:380px 1fr;gap:20px;padding:20px}
+    .card{background:var(--panel);border:1px solid #1a2947;border-radius:14px;padding:16px}
+    .card h2{font-size:16px;margin:0 0 10px}
+    .row{display:flex;align-items:center;gap:10px;margin:10px 0}
+    label{font-size:13px;color:var(--muted)}
+    input[type="file"], select, input[type="number"], input[type="range"]{width:100%;background:#0d1526;color:#eaf2ff;border:1px solid #253a66;border-radius:10px;padding:8px}
+    button{background:#183664;border:1px solid #274f94;color:#eaf2ff;border-radius:10px;padding:10px 12px;cursor:pointer}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px dashed #20355f;padding:6px 8px;text-align:left;color:#cfe0ff}
+    .pill{font-size:11px;border:1px solid #274f94;padding:2px 6px;border-radius:999px;color:#cfe0ff;background:#0d1526}
+    footer{padding:14px;color:#9fb3c8;border-top:1px solid #1a2947}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .hint{font-size:12px;color:#9fb3c8}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hurricane Sonification Prototype</h1>
+    <div class="sub">Map wind, pressure & location over time to sound using Tone.js. Category is auto‑derived from wind if not provided. Load a CSV and press Play.</div>
+  </header>
+
+  <main>
+    <section class="card" id="controls">
+      <h2>Controls</h2>
+      <div class="row">
+        <label class="mono">CSV &nbsp;<span class="pill">time, lat, lon, wind, pressure, category</span></label>
+        <input id="file" type="file" accept=".csv" />
+      </div>
+      <div class="row">
+        <button id="btnSample">⇪ Load Sample (knots)</button>
+        <button id="btnSample2">⇪ Load Sample (mph)</button>
+        <span class="hint">Two built-in test cases. #2 includes mph winds and a missing pressure value.</span>
+      </div>
+      <div class="row">
+        <button id="btnStart" disabled>▶ Play</button>
+        <button id="btnPause" disabled>⏸ Pause</button>
+        <button id="btnStop" disabled>⏹ Stop</button>
+      </div>
+      <div class="row">
+        <label>Time scale (× real time per row)</label>
+        <input id="timeScale" type="range" min="0.2" max="5" step="0.1" value="1" />
+      </div>
+      <div class="row">
+        <label>Master volume</label>
+        <input id="volume" type="range" min="-24" max="0" step="1" value="-6" />
+      </div>
+      <div class="row">
+        <label>Pitch mapping (Wind → Hz)</label>
+        <select id="pitchMap">
+          <option value="linear" selected>Linear (100 + wind*5)</option>
+          <option value="semi">Semitone scale</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Pressure → Loudness</label>
+        <select id="pressMap">
+          <option value="gain" selected>Gain (lower pressure = louder)</option>
+          <option value="filter">Lowpass opens with lower pressure</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Built-in Test Cases</h2>
+      <ul>
+        <li><strong>Sample (knots):</strong> 6 rows, intensification TS→Cat 3, uses <code>wind_kt</code> & <code>mslp</code>.</li>
+        <li><strong>Sample (mph):</strong> 6 rows, uses <code>wind_mph</code>, one row intentionally <em>missing pressure</em> — strings should <em>not play</em> on that row.</li>
+        <li><strong>Sample 3 (missing wind):</strong> 5 rows, one row intentionally <em>missing wind</em> — woodwinds & brass should <em>not play</em> on that row.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Column Guide</h2>
+      <table>
+        <thead><tr><th>Preferred Columns</th><th>Accepted Aliases</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>time</code></td><td><code>timestamp, date, ISO_time</code></td><td>2018-10-10T12:00:00Z</td></tr>
+          <tr><td><code>lat</code></td><td><code>latitude</code></td><td>26.1</td></tr>
+          <tr><td><code>lon</code></td><td><code>longitude, lng</code></td><td>-86.5</td></tr>
+          <tr><td><code>wind</code></td><td><code>vmax, wind_kt, max_wind_kt, wind_mph, max_wind_mph, USA_WIND, WMO_WIND</code></td><td>140 (kt) or 160 (mph)</td></tr>
+          <tr><td><code>pressure</code></td><td><code>mslp, pmin, USA_PRES, WMO_PRES</code></td><td>919</td></tr>
+        </tbody>
+      </table>
+      <p class="sub">If <code>category</code> is absent, the app derives SSHWS from wind (mph). If your wind is in knots, include a <code>*_kt</code> field name or one of the aliases above.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Mappings:</span>
+    <ul>
+      <li>Wind → Woodwind trill (speed & loudness); Pressure → Strings (low pitch & dissonance); Derived Category → Brass motif; Lon → Stereo Pan; Lat → Brightness; Time → Rhythm (row cadence)</li>
+    </ul>
+  </footer>
+
+  <script>
+    // --- Audio graph (bus & FX) ---
+    const master = new Tone.Gain().toDestination();
+    const mainLPF = new Tone.Filter({ type: 'lowpass', frequency: 8000, Q: 0.7 }).connect(master);
+    const mainHPF = new Tone.Filter({ type: 'highpass', frequency: 50, Q: 0.7 }).connect(mainLPF);
+    const panBus  = new Tone.Panner(0).connect(mainHPF);
+    const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.15 }).connect(panBus);
+
+    // --- State ---
+    const state = { rows: [], idx: 0, playing: false, loop: null };
+
+    // --- UI Elements ---
+    var elFile = document.getElementById('file');
+    var elStart = document.getElementById('btnStart');
+    var elPause = document.getElementById('btnPause');
+    var elStop = document.getElementById('btnStop');
+    var elTimeScale = document.getElementById('timeScale');
+    var elVolume = document.getElementById('volume');
+    var elPitchMap = document.getElementById('pitchMap');
+    var elPressMap = document.getElementById('pressMap');
+    var elBtnSample = document.getElementById('btnSample');
+    var elBtnSample2 = document.getElementById('btnSample2');
+    var elBtnSample3 = document.getElementById('btnSample3');
+
+    // Volume control
+    master.gain.value = Tone.dbToGain(parseFloat(elVolume.value));
+    elVolume.addEventListener('input', function(){
+      master.gain.value = Tone.dbToGain(parseFloat(elVolume.value));
+    });
+
+    // --- Helpers (ES5-compatible) ---
+    function gKey(obj, key){
+      if (!obj) return undefined;
+      if (key in obj) return obj[key];
+      var kl = (key && typeof key === 'string') ? key.toLowerCase() : '';
+      if (kl && (kl in obj)) return obj[kl];
+      return undefined;
+    }
+    function num(v){ return (v===undefined || v===null || v==="") ? NaN : parseFloat(v); }
+
+    function deriveCategoryFromWind(w_mph){
+      var w = isFinite(w_mph) ? w_mph : 0;
+      if (w >= 157) return 5;
+      if (w >= 130) return 4;
+      if (w >= 111) return 3;
+      if (w >= 96)  return 2;
+      if (w >= 74)  return 1;
+      return 0; // TS/TD
+    }
+
+    function panFromLon(lon){
+      var min=-100, max=-60; var t=Math.max(0, Math.min(1, (lon-min)/(max-min)));
+      return t*2-1;
+    }
+
+    function hpfFromLat(lat){
+      var min=5, max=45; var t=Math.max(0, Math.min(1, (lat-min)/(max-min)));
+      return 50 + t*(1500-50);
+    }
+
+    function stringPitchFromPressure(pressure){
+      var p = isFinite(pressure) ? pressure : 1015;
+      var t = Math.max(0, Math.min(1, (1020 - p) / 100));
+      return 110 - t*55; // 110..55 Hz
+    }
+
+    function woodwindNoteCount(wind){
+      var w = Math.max(0, Math.min(160, isFinite(wind)?wind:0));
+      return Math.round(2 + (w/160)*14);
+    }
+
+    function woodwindGain(wind){
+      var w = Math.max(0, Math.min(160, isFinite(wind)?wind:0));
+      return 0.15 + (w/160)*0.6; // 0.15 .. 0.75
+    }
+
+    var brassMotifs = { 0:[0], 1:[0], 2:[0,7], 3:[0,3,7], 4:[0,2,5,7], 5:[0,2,3,6,10] };
+    function brassVolume(cat){ return Math.min(1, 0.3 + (cat*0.14)); }
+
+    function pressureToBrightness(pressure){
+      var map = elPressMap.value;
+      var p = isFinite(pressure) ? pressure : 1015;
+      var delta = Math.max(0, 1015 - p);
+      var gain = Math.min(1, delta/40);
+      if(map === 'filter'){
+        var freq = 1000 + gain*5000;
+        mainLPF.frequency.rampTo(freq, 0.1);
+        return 0.6;
+      }
+      return gain;
+    }
+
+    // File load (avoid optional chaining for older engines)
+    elFile.addEventListener('change', function(e){
+      var files = e && e.target && e.target.files ? e.target.files : null;
+      var file = files && files.length ? files[0] : null;
+      if (!file) return;
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: function(res){
+          function normalize(o){
+            // Prefer mph, else assume kt
+            var wind_mph = num(gKey(o,'wind_mph') || gKey(o,'max_wind_mph'));
+            var wind_kt  = num(gKey(o,'wind_kt')  || gKey(o,'max_wind_kt') || gKey(o,'vmax') || gKey(o,'USA_WIND') || gKey(o,'WMO_WIND') || gKey(o,'wind'));
+            var wind     = isFinite(wind_mph) ? wind_mph : (isFinite(wind_kt) ? wind_kt * 1.15078 : NaN);
+
+            var pressure = num(gKey(o,'pressure') || gKey(o,'mslp') || gKey(o,'pmin') || gKey(o,'USA_PRES') || gKey(o,'WMO_PRES'));
+            var rawCat   = parseInt(gKey(o,'category') || gKey(o,'cat') || gKey(o,'sshws'));
+            var category = isFinite(rawCat) ? rawCat : deriveCategoryFromWind(wind);
+
+            return {
+              time: gKey(o,'time') || gKey(o,'timestamp') || gKey(o,'date') || gKey(o,'ISO_time') || null,
+              lat: num(gKey(o,'lat') || gKey(o,'latitude')),
+              lon: num(gKey(o,'lon') || gKey(o,'longitude') || gKey(o,'lng')),
+              wind: wind,
+              pressure: pressure,
+              category: category
+            };
+          }
+          state.rows = res.data.map(normalize).filter(function(r){ return isFinite(r.lat) && isFinite(r.lon); });
+          state.idx = 0;
+          elStart.disabled = state.rows.length === 0;
+          elPause.disabled = true;
+          elStop.disabled = true;
+          if (state.rows.length === 0) alert('No valid rows found. Expected headers: time,lat,lon,wind,pressure,(category optional)');
+        }
+      });
+    });
+
+    // --- Conductor (Time) helpers ---
+    async function ensureAudio(){ await Tone.start(); }
+    function measureMs(){ return 800 / parseFloat(elTimeScale.value || '1'); }
+
+    // --- Voices ---
+    function playStrings(pressure, dur){
+      var baseFreq = stringPitchFromPressure(pressure);
+      var loud = pressureToBrightness(pressure);
+
+      var env = new Tone.AmplitudeEnvelope({ attack:0.05, decay:0.4, sustain: Math.min(0.9, 0.3 + loud), release:0.3 }).connect(panBus);
+      var filt = new Tone.Filter({ type:'lowpass', frequency:1200, Q:0.4 }).connect(env);
+      var osc  = new Tone.Oscillator({ frequency: baseFreq, type:'sawtooth' }).connect(filt);
+      osc.start(); env.triggerAttackRelease(dur*0.95);
+
+      if (isFinite(pressure) && pressure < 950){
+        var detuneSemis = 1.5;
+        var freq2 = baseFreq * Math.pow(2, detuneSemis/12);
+        var env2 = new Tone.AmplitudeEnvelope({ attack:0.05, decay:0.4, sustain: Math.min(0.8, 0.25 + loud), release:0.25 }).connect(panBus);
+        var filt2 = new Tone.Filter({ type:'lowpass', frequency:1000, Q:0.5 }).connect(env2);
+        var osc2  = new Tone.Oscillator({ frequency: freq2, type:'sawtooth' }).connect(filt2);
+        osc2.start(); env2.triggerAttackRelease(dur*0.9);
+        osc2.stop('+'+dur);
+      }
+      osc.stop('+'+dur);
+    }
+
+    function playWoodwinds(wind, dur){
+      var notes = woodwindNoteCount(wind);
+      var g = woodwindGain(wind);
+      var synth = new Tone.Synth({ oscillator:{type:'triangle'}, envelope:{attack:0.01,decay:0.08,sustain:0.1,release:0.05} }).connect(new Tone.Gain(g).connect(reverb));
+      var scale = [0,2,4,7,9];
+      var baseHz = 660;
+      for (var i=0;i<notes;i++){
+        var t = (i/notes) * (dur*0.9);
+        var idx = Math.floor((i*1.7) % scale.length);
+        var semis = scale[idx];
+        var freq = baseHz * Math.pow(2, semis/12);
+        synth.triggerAttackRelease(freq, 0.06, '+'+t);
+      }
+      setTimeout(function(){ synth.dispose(); }, dur*1000 + 50);
+    }
+
+    function playBrass(category, dur){
+      var cat = Math.max(0, Math.min(5, parseInt(category)||0));
+      var motif = brassMotifs[cat] || brassMotifs[0];
+      var vol = brassVolume(cat);
+      var gain = new Tone.Gain(vol).connect(panBus);
+      var filt = new Tone.Filter({ type:'lowpass', frequency:1800, Q:0.6 }).connect(gain);
+      var synth = new Tone.Synth({ oscillator:{type: (cat>=4?'square':'sawtooth')}, envelope:{attack:0.01,decay:0.12,sustain:0.0,release:0.08} }).connect(filt);
+      var baseHz = 220;
+      var stepDur = Math.max(0.06, Math.min(0.18, dur / Math.max(1, motif.length+1)));
+      for (var i=0;i<motif.length;i++){
+        var when = '+'+(i*stepDur);
+        synth.triggerAttackRelease(baseHz * Math.pow(2, motif[i]/12), stepDur*0.9, when);
+      }
+      setTimeout(function(){ synth.dispose(); }, dur*1000 + 50);
+    }
+
+    // --- Per-step performance ---
+    function performStep(row){
+      var dur = measureMs()/1000;
+      var pan = panFromLon(row.lon);
+      panBus.pan.rampTo(pan, 0.08);
+      mainHPF.frequency.rampTo(hpfFromLat(row.lat), 0.1);
+
+      // Play nothing for a voice if its source datapoint is missing
+      if (isFinite(row.pressure)) { playStrings(row.pressure, dur); }
+      if (isFinite(row.wind)) { playWoodwinds(row.wind, dur); }
+      if (row.category !== null && row.category !== undefined && isFinite(row.category)) { playBrass(row.category, dur); }
+    }
+
+    function nextStep(){
+      if (!state.playing) return;
+      if (state.idx >= state.rows.length){ stop(); return; }
+      var r = state.rows[state.idx++];
+      performStep(r);
+    }
+
+    function start(){
+      state.playing = true;
+      elStart.disabled = true; elPause.disabled = false; elStop.disabled = false;
+      var interval = measureMs();
+      state.loop = setInterval(nextStep, interval);
+    }
+
+    function pause(){
+      state.playing = false;
+      clearInterval(state.loop); state.loop = null;
+      elStart.disabled = false; elPause.disabled = true; elStop.disabled = false;
+    }
+
+    function stop(){
+      state.playing = false; state.idx = 0;
+      clearInterval(state.loop); state.loop = null;
+      elStart.disabled = false; elPause.disabled = true; elStop.disabled = true;
+    }
+
+    document.getElementById('btnStart').addEventListener('click', function(){ ensureAudio().then(start); });
+    document.getElementById('btnPause').addEventListener('click', pause);
+    document.getElementById('btnStop').addEventListener('click', stop);
+
+    // --- Built-in samples (test cases) ---
+    var SAMPLE_CSV = "time,lat,lon,wind_kt,mslp\n"
+      + "2018-10-09T00:00:00Z,24.5,-84.5,45,1005\n"
+      + "2018-10-09T06:00:00Z,25.1,-84.2,55,998\n"
+      + "2018-10-09T12:00:00Z,25.7,-83.9,65,990\n"
+      + "2018-10-09T18:00:00Z,26.3,-83.5,85,974\n"
+      + "2018-10-10T00:00:00Z,27.1,-83.0,100,960\n"
+      + "2018-10-10T06:00:00Z,28.0,-82.6,115,948";
+
+    var SAMPLE_CSV2 = "time,lat,lon,wind_mph,pressure\n"
+      + "2018-10-09T00:00:00Z,24.5,-84.5,52,1008\n"
+      + "2018-10-09T06:00:00Z,25.1,-84.2,63,1002\n"
+      + "2018-10-09T12:00:00Z,25.7,-83.9,74,996\n"
+      + "2018-10-09T18:00:00Z,26.3,-83.5,96,\n"     /* missing pressure on purpose: strings should skip */
+      + "2018-10-10T00:00:00Z,27.1,-83.0,111,970\n"
+      + "2018-10-10T06:00:00Z,28.0,-82.6,130,955";
+
+    var SAMPLE_CSV3 = "time,lat,lon,pressure\n"
+      + "2018-10-09T00:00:00Z,24.5,-84.5,1008\n"
+      + "2018-10-09T06:00:00Z,25.1,-84.2,1002\n"
+      + "2018-10-09T12:00:00Z,25.7,-83.9,996\n"
+      + "2018-10-09T18:00:00Z,26.3,-83.5,974\n"  /* missing wind on purpose: woodwinds & brass should skip */
+      + "2018-10-10T00:00:00Z,27.1,-83.0,960";
+
+    function loadRowsFromParsed(parsed){
+      function normalize(o){
+        var wind_mph = num(gKey(o,'wind_mph') || gKey(o,'max_wind_mph'));
+        var wind_kt  = num(gKey(o,'wind_kt')  || gKey(o,'max_wind_kt') || gKey(o,'vmax') || gKey(o,'USA_WIND') || gKey(o,'WMO_WIND') || gKey(o,'wind'));
+        var wind     = isFinite(wind_mph) ? wind_mph : (isFinite(wind_kt) ? wind_kt * 1.15078 : NaN);
+
+        var pressure = num(gKey(o,'pressure') || gKey(o,'mslp') || gKey(o,'pmin') || gKey(o,'USA_PRES') || gKey(o,'WMO_PRES'));
+        var rawCat   = parseInt(gKey(o,'category') || gKey(o,'cat') || gKey(o,'sshws'));
+        // If category not provided and wind is NaN, leave category as null to skip brass
+        var category = isFinite(rawCat) ? rawCat : (isFinite(wind) ? deriveCategoryFromWind(wind) : null);
+
+        return {
+          time: gKey(o,'time') || gKey(o,'timestamp') || gKey(o,'date') || gKey(o,'ISO_time') || null,
+          lat: num(gKey(o,'lat') || gKey(o,'latitude')),
+          lon: num(gKey(o,'lon') || gKey(o,'longitude') || gKey(o,'lng')),
+          wind: wind,
+          pressure: pressure,
+          category: category
+        };
+      }
+      state.rows = parsed.data.map(normalize).filter(function(r){ return isFinite(r.lat) && isFinite(r.lon); });
+      state.idx = 0;
+      elStart.disabled = state.rows.length === 0;
+      elPause.disabled = true;
+      elStop.disabled = true;
+    }
+
+    elBtnSample.addEventListener('click', function(){
+      Papa.parse(SAMPLE_CSV, { header:true, dynamicTyping:true, skipEmptyLines:true, complete: loadRowsFromParsed });
+    });
+    elBtnSample2.addEventListener('click', function(){
+      Papa.parse(SAMPLE_CSV2, { header:true, dynamicTyping:true, skipEmptyLines:true, complete: loadRowsFromParsed });
+    });
+
+    // Create handler for Sample 3 (missing wind). If button missing, add it.
+    if (!elBtnSample3) {
+      var lastRow = document.querySelector('#controls .row');
+      var holder = document.createElement('div');
+      holder.className = 'row';
+      var btn = document.createElement('button');
+      btn.id = 'btnSample3';
+      btn.textContent = '⇪ Load Sample (missing wind)';
+      holder.appendChild(btn);
+      lastRow.parentNode.insertBefore(holder, lastRow.nextSibling);
+      elBtnSample3 = btn;
+    }
+    elBtnSample3.addEventListener('click', function(){
+      Papa.parse(SAMPLE_CSV3, { header:true, dynamicTyping:true, skipEmptyLines:true, complete: loadRowsFromParsed });
+    });
+  </script>
+</body>
+</html>
