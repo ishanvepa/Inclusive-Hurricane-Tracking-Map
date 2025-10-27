@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Hurricane Sonification (Highcharts)</title>
+
+  <!-- Highcharts + Sonification -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/sonification.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+  <style>
+    body {
+      background:#0b1220;
+      color:#eaf2ff;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      padding: 1rem 2rem;
+    }
+    #container {
+      min-width: 320px;
+      max-width: 600px;
+      height: 400px;
+      margin: 0 auto 1rem;
+      background:#111a2b;
+      border:1px solid #1a2947;
+      border-radius:12px;
+      padding:1rem;
+      color:#eaf2ff;
+    }
+    button {
+      background:#183664;
+      border:1px solid #274f94;
+      color:#eaf2ff;
+      border-radius:10px;
+      padding:10px 12px;
+      cursor:pointer;
+      margin-right:0.5rem;
+    }
+    button:disabled {
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .legend {
+      font-size: 0.875rem;
+      color:#9fb3c8;
+      line-height:1.4;
+      max-width:600px;
+      margin:0 auto;
+    }
+    .legend code {
+      background:#0d1526;
+      border:1px solid #253a66;
+      border-radius:4px;
+      padding:0 4px;
+      color:#b7cdf7;
+    }
+    h1 {
+      font-size:1.1rem;
+      font-weight:600;
+      margin:0 0 .5rem;
+      color:#eaf2ff;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Hurricane Audio Prototype (Highcharts Sonification)</h1>
+  <div id="container"></div>
+
+  <div style="text-align:center; margin-bottom:1rem;">
+    <h3 style="font-size:1rem; margin:1rem 0 0.5rem; color:#eaf2ff;">Composite Sonification (All Elements)</h3>
+    <button id="playBtn">▶ Play storm (All)</button>
+    <button id="stopBtn">⏹ Stop</button>
+  </div>
+
+  <div style="text-align:center; margin-bottom:1rem; padding-top:0.5rem; border-top:1px solid #1a2947;">
+    <h3 style="font-size:1rem; margin:1rem 0 0.5rem; color:#eaf2ff;">Individual Parameters</h3>
+    <div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap; max-width:700px; margin:0 auto;">
+      <button id="playWindBtn">🌪️ Wind Speed</button>
+      <button id="playPressureBtn">🌡️ Pressure</button>
+      <button id="playCategoryBtn">⚠️ Category</button>
+      <button id="playLocationBtn">📍 Location (Pan)</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <p><strong>Mapping</strong></p>
+    <ul style="padding-left:1.1rem;">
+      <li><b>Strings (Pressure):</b> lower pressure → lower pitch drone, plus extra "growl" below 950 mb.</li>
+      <li><b>Woodwinds (Wind):</b> higher wind → louder + shorter, frantic notes.</li>
+      <li><b>Brass (Category):</b> short warning motif (earcon) each timestep using category 0–5.</li>
+      <li><b>Stereo Pan (Lon):</b> west/east position pans left/right in headphones.</li>
+      <li><b>Time:</b> points play sequentially by timestamp.</li>
+    </ul>
+  </div>
+
+<script>
+// --------------------------------------------------------
+// 1. Load hurricane data from CSV file
+//    CSV columns: time, extra_obs, special, type, lat, lon, vmax, mslp, wmo_basin
+//    vmax is in knots, needs conversion to mph
+// --------------------------------------------------------
+
+let processedData = [];
+let chart = null;
+
+// helper: derive cat if missing (SSHWS by sustained wind mph)
+function deriveCatFromWind(w) {
+  if (w >= 157) return 5;
+  if (w >= 130) return 4;
+  if (w >= 111) return 3;
+  if (w >= 96)  return 2;
+  if (w >= 74)  return 1;
+  return 0;
+}
+
+// Convert knots to mph
+function knotsToMph(knots) {
+  return knots * 1.15078;
+}
+
+// Parse CSV data
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',');
+  const data = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',');
+    const row = {};
+    for (let j = 0; j < headers.length; j++) {
+      row[headers[j]] = values[j];
+    }
+    data.push(row);
+  }
+  
+  return data;
+}
+
+// Load and process hurricane data from CSV
+async function loadHurricaneData() {
+  try {
+    const response = await fetch('hurricane_michael_data.csv');
+    const csvText = await response.text();
+    const csvData = parseCSV(csvText);
+    
+    // Convert CSV data to processedData format
+    processedData = csvData.map(row => {
+      const windKnots = Number.parseFloat(row.vmax);
+      const windMph = knotsToMph(windKnots);
+      const pressure = Number.parseFloat(row.mslp);
+      const lat = Number.parseFloat(row.lat);
+      const lon = Number.parseFloat(row.lon);
+      const dateISO = row.time.replace(' ', 'T') + 'Z';
+      const cat = deriveCatFromWind(windMph);
+      
+      return {
+        x: Date.parse(dateISO),     // Highcharts time axis
+        y: windMph,                 // we'll use wind as default series y
+        windMph: windMph,
+        pressure: pressure,
+        category: cat,
+        lat: lat,
+        lon: lon
+      };
+    });
+    
+    // Initialize chart after data is loaded
+    initializeChart();
+  } catch (error) {
+    console.error('Error loading hurricane data:', error);
+    alert('Failed to load hurricane data. Please ensure hurricane_michael_data.csv is in the same directory.');
+  }
+}
+
+// --------------------------------------------------------
+// 2. Build Highcharts line series for visualization
+//    We'll just show wind as the visible line for now.
+// --------------------------------------------------------
+
+function initializeChart() {
+  chart = Highcharts.chart('container', {
+    chart: {
+      backgroundColor: '#111a2b',
+      style: { color: '#eaf2ff' }
+    },
+    title: {
+      text: 'Hurricane Michael Intensity Over Time',
+      style: { color: '#eaf2ff', fontSize: '14px' }
+    },
+    xAxis: {
+      type: 'datetime',
+      labels: { style: { color: '#9fb3c8' } }
+    },
+    yAxis: {
+      title: { text: 'Wind (mph)', style: { color: '#9fb3c8' } },
+      labels: { style: { color: '#9fb3c8' } }
+    },
+    legend: { enabled: false },
+    series: [{
+      name: 'Wind speed (mph)',
+      data: processedData.map(p => ({
+        x: p.x,
+        y: p.windMph,
+        windMph: p.windMph,
+        pressure: p.pressure,
+        category: p.category,
+        lat: p.lat,
+        lon: p.lon
+      })),
+      color: '#86b7ff',
+      lineWidth: 2,
+      marker: { enabled: true, radius: 3 }
+    }]
+  });
+}
+
+// --------------------------------------------------------
+// 3. Define EARCONS for category motifs (your Brass section)
+//    Each earcon is a short motif (a few notes).
+//    We'll vary pitch arrays + volume by category.
+//    Highcharts supports earcons and can trigger them
+//    per point via sonify() config.
+// --------------------------------------------------------
+
+function earconForCategory(cat) {
+  // We'll return a Highcharts.sonification.Earcon config-like object.
+  // Rough idea:
+  //  - higher category => louder, more notes, more "alarming"
+  //  - pitch arrays map to triads etc.
+  const baseVolume = Math.min(1, 0.3 + cat * 0.14); // mirrors brassVolume logic
+  const motifs = {
+    0: ['c4'],
+    1: ['c4'],
+    2: ['c4','g4'],
+    3: ['c4','eb4','g4'],        // minor-ish triad
+    4: ['c4','d4','f4','g4'],    // driving
+    5: ['c4','d4','f#4','a4','c5'] // tense / urgent
+  };
+  return {
+    // Instrument preset: use "trumpet" style-ish synth
+    // Highcharts lets you pick instruments like 'sine', 'square', 'saxophone', etc.
+    instruments: [{
+      instrument: 'square',
+      mapping: {
+        volume: baseVolume,
+        // Play chord: pitch array
+        pitch: motifs[cat] || motifs[0],
+        // Short stabs
+        noteDuration: 150,
+        // Play instantly when triggered
+        time: 0
+      }
+    }]
+  };
+}
+
+// --------------------------------------------------------
+// 4. Build sonification config
+//    We'll define multiple tracks to emulate:
+//     - STRINGS = pressure (low drone)
+//     - WOODWINDS = wind (fast notes)
+//     - LOCATION = pan mapping (lon -> stereo)
+//
+//    Highcharts plays tracks in parallel for each point, and
+//    steps through points in time order unless you override time mapping.
+// --------------------------------------------------------
+
+// Helper: map longitude range to pan [-1, +1]
+// Adjusted for Hurricane Michael's path (Gulf of Mexico to Atlantic)
+function panFromLon(lon) {
+  const min = -90;
+  const max = -10;
+  let t = (lon - min) / (max - min);
+  t = Math.max(0, Math.min(1, t));
+  return (t * 2) - 1;
+}
+
+function buildSonifyConfig() {
+  return {
+    duration: 15000, // total playback duration ms (adjusted for more data points)
+    order: 'sequential', // play points in sequence
+    pointPlayTime: 'x', // play in timestamp order (time axis)
+    
+    // Configure tracks for the first (and only) series
+    dataExtremes: {
+      pressure: { min: 919, max: 1015 },
+      windMph: { min: 25, max: 165 },
+      lat: { min: 15, max: 50 },
+      lon: { min: -90, max: -10 }
+    },
+
+    // We'll attach multiple "tracks". Each track is one instrument voice
+    // with its own mapping rules.
+    tracks: [
+
+      // STRINGS / PRESSURE BED
+      {
+        // One note per point, sustained-ish. Lower pressure -> lower pitch.
+        instrument: 'sawtooth', // darker string-like pad
+        activeWhen: function() { return true; }, // always active
+        mapping: {
+          // pitch: inverted mapping of pressure → lower pressure = lower pitch
+          pitch: {
+            mapTo: 'pressure',
+            // We invert polarity manually: we'll map pressure range [920..1015]
+            // down into [c2..g3], but flip direction so 920 -> c2 (low, ominous),
+            // 1015 -> g3 (higher).
+            min: 'c2',
+            max: 'g3',
+            mapFunction: function(val) {
+              // custom normalize: val ~ 920-1015
+              const low = 919;
+              const high = 1015;
+              let t = (val - low) / (high - low); // 0 at 920, 1 at 1015
+              t = Math.max(0, Math.min(1, t));
+              return t;
+            }
+          },
+
+          volume: {
+            // stronger storm (lower pressure) = louder bed
+            mapTo: 'pressure',
+            mapFunction: function(val) {
+              // map ~920mb => loud 0.9, 1015mb => quiet 0.3
+              let vol = 0.3 + (1015 - val) / 100; // ~0.3..1.3
+              vol = Math.max(0.1, Math.min(1, vol));
+              return vol;
+            }
+          },
+
+          noteDuration: 400,
+          gapBetweenNotes: 50,
+          pan: {
+            mapTo: 'lon',
+            mapFunction: panFromLon
+          }
+        }
+      },
+
+      // WOODWINDS / WIND INTENSITY
+      {
+        instrument: 'triangle', // bright, flute-ish
+        activeWhen: function() { return true; }, // always active
+        mapping: {
+          pitch: {
+            // High wind should sound higher & piercing.
+            mapTo: 'windMph',
+            min: 'g4',
+            max: 'c6',
+            mapFunction: function(w) {
+              // Normalize wind to 0-1
+              const minWind = 25;
+              const maxWind = 165;
+              let t = (w - minWind) / (maxWind - minWind);
+              t = Math.max(0, Math.min(1, t));
+              return t;
+            }
+          },
+          volume: {
+            mapTo: 'windMph',
+            mapFunction: function(w) {
+              // 0 mph -> 0.1, 160 mph -> ~0.9
+              let v = 0.1 + (w/160)*0.8;
+              v = Math.min(1, v);
+              return v;
+            }
+          },
+          // faster wind -> shorter notes => feels like frantic trill
+          noteDuration: {
+            mapTo: 'windMph',
+            mapFunction: function(w) {
+              // Map 30 mph -> ~300ms, 150 mph -> ~60ms
+              let dur = 300 - (w * 2); // crude linear
+              dur = Math.max(60, Math.min(300, dur));
+              return dur;
+            }
+          },
+          gapBetweenNotes: {
+            // less gap at high wind → "rattling"
+            mapTo: 'windMph',
+            mapFunction: function(w) {
+              let gap = 200 - (w * 1.2); // ms
+              gap = Math.max(20, Math.min(200, gap));
+              return gap;
+            }
+          },
+          pan: {
+            // keep same pan as location, so flute moves with storm
+            mapTo: 'lon',
+            mapFunction: panFromLon
+          }
+        }
+      },
+
+      // LOCATION / PRESENCE BED
+      // optional subtle layer just giving stereo position & presence.
+      {
+        instrument: 'sine',
+        activeWhen: function() { return true; }, // always active
+        mapping: {
+          pitch: 'c3',
+          volume: {
+            // Use lat to gently vary volume so you "feel" north/south drift.
+            mapTo: 'lat',
+            mapFunction: function(lat) {
+              // lat ~ 15-50 => 0.1..0.5
+              let v = 0.1 + ((lat-15)/(50-15))*0.4;
+              v = Math.max(0.1, Math.min(0.5, v));
+              return v;
+            }
+          },
+          noteDuration: 200,
+          gapBetweenNotes: 100,
+          pan: {
+            mapTo: 'lon',
+            mapFunction: panFromLon
+          }
+        }
+      }
+    ],
+
+    // ----------------------------------------------------
+    // Earcons (BRASS motifs)
+    // We attach a per-point event that triggers an earcon
+    // matching this point's category. For Cat 4/5, it's louder,
+    // more complex.
+    // ----------------------------------------------------
+    earcons: processedData.map((p, i) => {
+      return {
+        earcon: earconForCategory(p.category),
+        // when to play (in timeline). We align it directly
+        // with that point's time index in the playback.
+        // Each point is spaced automatically by Highcharts over duration.
+        // You can also use pointPlayTime offsets if you need super control.
+        playOnPoint: { seriesIndex: 0, pointIndex: i }
+      };
+    }),
+
+    // Safety: skip voices if their data is missing.
+    // Highcharts plays mappings per point; if a mapped prop is undefined,
+    // that param just won't render well. But for true silence we could
+    // filter out invalid points before playback.
+    // We'll do it by overriding the points passed to sonify:
+    // (see below - we'll provide pointGroup for only valid data).
+  };
+}
+
+// --------------------------------------------------------
+// 5. Individual sonification configs for each parameter
+// --------------------------------------------------------
+
+function buildWindOnlyConfig() {
+  return {
+    duration: 15000,
+    order: 'sequential',
+    pointPlayTime: 'x',
+    tracks: [{
+      instrument: 'triangle',
+      mapping: {
+        pitch: {
+          mapTo: 'windMph',
+          min: 'c4',
+          max: 'c6'
+        },
+        volume: 0.7,
+        noteDuration: 200
+      }
+    }]
+  };
+}
+
+function buildPressureOnlyConfig() {
+  return {
+    duration: 15000,
+    order: 'sequential',
+    pointPlayTime: 'x',
+    tracks: [{
+      instrument: 'sawtooth',
+      mapping: {
+        pitch: {
+          mapTo: 'pressure',
+          min: 'c2',
+          max: 'a3',
+          within: 'yAxis',
+          // Invert: lower pressure = lower pitch
+          mapFunction: function(value) {
+            // value comes in as pressure (919-1015)
+            // We want lower pressure to map to lower pitch
+            // So we need to invert the scale
+            return 1 - ((value - 919) / (1015 - 919));
+          }
+        },
+        volume: 0.7,
+        noteDuration: 400
+      }
+    }]
+  };
+}
+
+function buildCategoryOnlyConfig() {
+  return {
+    duration: 15000,
+    order: 'sequential',
+    pointPlayTime: 'x',
+    tracks: [{
+      instrument: 'square',
+      mapping: {
+        pitch: {
+          mapTo: 'category',
+          min: 'c3',
+          max: 'c5'
+        },
+        volume: {
+          mapTo: 'category',
+          min: 0.3,
+          max: 0.9
+        },
+        noteDuration: 150
+      }
+    }]
+  };
+}
+
+function buildLocationOnlyConfig() {
+  return {
+    duration: 15000,
+    order: 'sequential',
+    pointPlayTime: 'x',
+    tracks: [{
+      instrument: 'sine',
+      mapping: {
+        pitch: {
+          mapTo: 'lat',
+          min: 'c3',
+          max: 'c5'
+        },
+        volume: 0.5,
+        noteDuration: 250,
+        pan: {
+          mapTo: 'lon',
+          min: -1,  // left speaker
+          max: 1    // right speaker
+        }
+      }
+    }]
+  };
+}
+
+// --------------------------------------------------------
+// 6. Hook up Play / Stop buttons
+//    Highcharts chart.sonify(config) starts playback.
+//    chart.sonification.cancel() stops it.
+// --------------------------------------------------------
+
+document.getElementById('playBtn').addEventListener('click', function () {
+  if (chart) {
+    const config = buildSonifyConfig();
+    console.log('Sonification config:', config);
+    console.log('First data point:', chart.series[0].data[0].options);
+    console.log('Total data points:', chart.series[0].data.length);
+    chart.sonify(config);
+  } else {
+    alert('Please wait for data to load...');
+  }
+});
+
+document.getElementById('playWindBtn').addEventListener('click', function () {
+  if (chart) {
+    console.log('Playing wind speed only');
+    chart.sonify(buildWindOnlyConfig());
+  } else {
+    alert('Please wait for data to load...');
+  }
+});
+
+document.getElementById('playPressureBtn').addEventListener('click', function () {
+  if (chart) {
+    console.log('Playing pressure only');
+    chart.sonify(buildPressureOnlyConfig());
+  } else {
+    alert('Please wait for data to load...');
+  }
+});
+
+document.getElementById('playCategoryBtn').addEventListener('click', function () {
+  if (chart) {
+    console.log('Playing category only');
+    chart.sonify(buildCategoryOnlyConfig());
+  } else {
+    alert('Please wait for data to load...');
+  }
+});
+
+document.getElementById('playLocationBtn').addEventListener('click', function () {
+  if (chart) {
+    console.log('Playing location (lat/lon pan) only');
+    chart.sonify(buildLocationOnlyConfig());
+  } else {
+    alert('Please wait for data to load...');
+  }
+});
+
+document.getElementById('stopBtn').addEventListener('click', function () {
+  if (chart && chart.sonification) {
+    chart.sonification.cancel();
+  }
+});
+
+// --------------------------------------------------------
+// 7. Load data when page loads
+// --------------------------------------------------------
+loadHurricaneData();
+</script>
+</body>
+</html>
