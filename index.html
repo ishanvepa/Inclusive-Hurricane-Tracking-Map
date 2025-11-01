@@ -169,9 +169,14 @@
                 <img src="media/sonifylogo.png" alt="" class="popup-icon" width="15" height="18" style="filter: hue-rotate(120deg);" />
                 <h2 id="sonification-title" class="popup-title">Storm Sonification</h2>
               </div>
-              <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
-                <img src="media/close.svg" alt="" width="18" height="18" />
-              </button>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="sonification-info-button" aria-label="Learn more about sonification" style="background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+                  <img src="media/question.svg" alt="Help" width="18" height="18" style="filter: invert(1);" />
+                </button>
+                <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
+                  <img src="media/close.svg" alt="" width="18" height="18" />
+                </button>
+              </div>
             </div>
 
             <div class="popup-content">
@@ -197,6 +202,78 @@
                   <li><strong>Position:</strong> Stereo panning</li>
                 </ul>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sonification Info Modal (larger detailed view) -->
+        <div id="sonification-info-modal" class="about-popup" role="dialog" aria-labelledby="sonification-info-title" aria-modal="true" tabindex="-1" style="display: none;">
+          <div class="about-popup-content">
+            <button id="close-sonification-info" class="close-popup" data-target="sonification-info" aria-label="Close sonification information">
+              <img src="media/close.svg" alt="Close" width="18" height="18" />
+            </button>
+            
+            <div class="about-inner">
+              <h2 id="sonification-info-title">
+                <img src="media/sonifylogo.png" alt="" style="width: 18px; height: 18px; filter: hue-rotate(120deg); vertical-align: middle; margin-right: 0.4em;" />
+                Storm Sonification
+              </h2>
+              
+              <p><strong>Sonification</strong> is the use of sound to represent data. Just as a graph shows data visually, sonification lets you <em>hear</em> the data. This makes hurricane information accessible to low-vision and visually impaired users, and provides an additional sensory dimension for everyone.</p>
+              
+              <h1>Sound Mapping</h1>
+              <p>Four layers of sound work together to represent different aspects of the hurricane:</p>
+
+              <h2>🌪️ Wind Speed → Woodwinds (Flute-like)</h2>
+              <ul>
+                <li><strong>Low wind:</strong> Slow, lower-pitched notes with longer gaps</li>
+                <li><strong>High wind:</strong> Rapid, high-pitched frantic trills</li>
+                <li><strong>Volume:</strong> Gets louder as wind speed increases</li>
+              </ul>
+
+              <h2>🌡️ Atmospheric Pressure → Strings (Low Drone)</h2>
+              <ul>
+                <li><strong>High pressure (1015 mb):</strong> Higher pitch, quieter</li>
+                <li><strong>Low pressure (920 mb):</strong> Very low, ominous pitch with extra "growl"</li>
+                <li><strong>Special effect:</strong> Below 950 mb, an additional dissonant tone adds urgency</li>
+              </ul>
+
+              <h2>⚠️ Hurricane Category → Brass (Warning Motifs)</h2>
+              <ul>
+                <li><strong>Category 0-1:</strong> Single note warning</li>
+                <li><strong>Category 2:</strong> Two-note motif</li>
+                <li><strong>Category 3-5:</strong> Complex chord progressions (3-5 notes)</li>
+                <li><strong>Volume:</strong> Increases with category intensity</li>
+              </ul>
+
+              <h2>📍 Geographic Location → Stereo Position</h2>
+              <ul>
+                <li><strong>Longitude (East/West):</strong> Sound pans across left and right speakers/headphones</li>
+                <li><strong>Latitude (North/South):</strong> Subtle brightness changes via high-pass filter</li>
+              </ul>
+
+              <h1>How to Use</h1>
+              
+              <h2>🎧 For Best Experience</h2>
+              <ul>
+                <li>Use <strong>headphones or stereo speakers</strong> to hear spatial positioning</li>
+                <li>Start with <strong>auto-play enabled</strong> and click through different time points</li>
+                <li>Listen for <strong>all four layers</strong> playing simultaneously</li>
+                <li>Pay attention to how sounds change as the storm intensifies</li>
+              </ul>
+
+              <h2>📖 Three Ways to Listen</h2>
+              <ul>
+                <li><strong>Auto-play:</strong> Click through the time dropdown to hear each moment</li>
+                <li><strong>Play Current Point:</strong> Manually trigger sound for the selected time</li>
+                <li><strong>Play Full Sequence:</strong> Hear the entire storm evolution automatically (800ms per point)</li>
+              </ul>
+
+              <h1>Technical Details</h1>
+              <p><strong>Audio Engine:</strong> Tone.js (Web Audio API)</p>
+              <p><strong>Synthesis:</strong> Sawtooth (strings), Triangle (woodwinds), Square/Sawtooth (brass), Sine (position)</p>
+              <p><strong>Effects:</strong> Reverb, stereo panning, dynamic filtering</p>
+              <p><strong>Data Source:</strong> Hurricane Michael best track data (NOAA)</p>
             </div>
           </div>
         </div>

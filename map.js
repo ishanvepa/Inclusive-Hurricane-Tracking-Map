@@ -493,7 +493,41 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     });
   }
-  
+
+  // Sonification info modal handlers
+  const infoButton = document.getElementById('sonification-info-button');
+  const infoModal = document.getElementById('sonification-info-modal');
+  const closeInfoBtn = document.getElementById('close-sonification-info');
+
+  if (infoButton && infoModal && closeInfoBtn) {
+    // Open modal when help button is clicked
+    infoButton.addEventListener('click', () => {
+      infoModal.style.display = 'block';
+      closeInfoBtn.focus(); // Focus close button for accessibility
+    });
+
+    // Close modal when X button is clicked
+    closeInfoBtn.addEventListener('click', () => {
+      infoModal.style.display = 'none';
+      infoButton.focus(); // Return focus to help button
+    });
+
+    // Close modal when clicking outside the content
+    infoModal.addEventListener('click', (e) => {
+      if (e.target === infoModal) {
+        infoModal.style.display = 'none';
+        infoButton.focus();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && infoModal.style.display === 'block') {
+        infoModal.style.display = 'none';
+        infoButton.focus();
+      }
+    });
+  }
   
   
 
