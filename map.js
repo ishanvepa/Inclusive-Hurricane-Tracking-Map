@@ -183,10 +183,30 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'
     });
 
-    item.addEventListener('click', () => {
+    item.addEventListener('click', async () => {
       currentStartIndex = i;
       updateHurricaneSeries();
       timeDropdown.style.display = 'none';
+      
+      // Auto-play sonification if enabled
+      if (window.Sonification && window.Sonification.getAutoPlay()) {
+        await window.Sonification.playPoint(point, 0.8);
+      }
+    });
+
+    // Keyboard support for dropdown items
+    item.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        currentStartIndex = i;
+        updateHurricaneSeries();
+        timeDropdown.style.display = 'none';
+        
+        // Auto-play sonification if enabled
+        if (window.Sonification && window.Sonification.getAutoPlay()) {
+          await window.Sonification.playPoint(point, 0.8);
+        }
+      }
     });
 
     timeDropdown.appendChild(item);
@@ -432,6 +452,47 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   setupToggle('poi-button', 'poi-popup');
   setupToggle('layers-button', 'layers-popup');
   setupToggle('wiki-button', 'wiki-popup');
+  setupToggle('sonification-button', 'sonification-popup');
+  
+  // Sonification controls
+  const autoSonifyCheckbox = document.getElementById('auto-sonify');
+  const playCurrentBtn = document.getElementById('play-current-point');
+  const playSequenceBtn = document.getElementById('play-sequence');
+  
+  // Auto-play checkbox
+  if (autoSonifyCheckbox) {
+    autoSonifyCheckbox.addEventListener('change', function() {
+      window.Sonification.setAutoPlay(this.checked);
+    });
+  }
+  
+  // Play current point
+  if (playCurrentBtn) {
+    playCurrentBtn.addEventListener('click', async function() {
+      if (currentStartIndex >= 0 && currentStartIndex < hurricane_path.length) {
+        const point = hurricane_path[currentStartIndex];
+        await window.Sonification.playPoint(point, 0.8);
+      }
+    });
+  }
+  
+  // Play full sequence
+  if (playSequenceBtn) {
+    playSequenceBtn.addEventListener('click', async function() {
+      if (window.Sonification.isPlaying()) {
+        // Stop the sequence
+        window.Sonification.stop();
+        this.textContent = '▶ Play Full Sequence';
+      } else {
+        // Start the sequence
+        this.textContent = '⏹ Stop Sequence';
+        await window.Sonification.playSequence(hurricane_path, 800, () => {
+          // Callback when sequence completes
+          playSequenceBtn.textContent = '▶ Play Full Sequence';
+        });
+      }
+    });
+  }
   
   
   
