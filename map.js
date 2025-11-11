@@ -311,13 +311,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     color: "#cc0000", opacity: 0.5, legendSymbolColor: "#d22", data: coneGeo.features.map(f => ({ geometry: f.geometry, properties: f.properties })),
     mapData: coneGeo, zIndex: 0, joinBy: null });
 
-  // Hide all layers by default
-  ["Hurricane Path", "Hurricane Path Markers", "Cone of Uncertainty"].forEach(name => {
-    const series = chart.series.find(s => s.name === name);
-    if (series) series.setVisible(false, false);
-  });
-  chart.redraw();
-
+ 
   // Setup interaction handlers
   document.getElementById("current-location").addEventListener("click", async () => {
     const userLocation = await new Promise(resolve => {
@@ -750,5 +744,196 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   // Zoom controls
   document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
   document.getElementById('zoom-out').addEventListener('click', () => chart.mapView.zoomBy(-1));
+
+  // === AUTO-ENABLE CONE + PATH (with markers) AFTER INITIALIZATION ===
+setTimeout(() => {
+  const coneCheckbox = document.querySelector('.layer-checkbox[data-layer="cone"]');
+  const pathCheckbox = document.querySelector('.layer-checkbox[data-layer="path"]');
+
+  // Make sure both checkboxes exist first
+  if (!coneCheckbox || !pathCheckbox) return;
+
+  // Check them visually
+  coneCheckbox.checked = true;
+  pathCheckbox.checked = true;
+
+  // Manually make series visible (avoiding race conditions)
+  const coneSeries = chart.series.find(s => s.name === "Cone of Uncertainty");
+  const pathSeries = chart.series.find(s => s.name === "Hurricane Path");
+  const markersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+
+  if (coneSeries) coneSeries.setVisible(true, false);
+  if (pathSeries) pathSeries.setVisible(true, false);
+  if (markersSeries) markersSeries.setVisible(true, false);
+
+  // Show legend and sub-option for path
+  const legendCheckbox = document.querySelector('.legend-subcheckbox[data-target="path"]');
+  const subOption = document.querySelector('.legend-suboption[data-parent="path"]');
+  const legendPopup = document.getElementById('popup-path');
+  if (legendCheckbox) legendCheckbox.checked = true;
+  if (subOption) subOption.style.display = 'block';
+  if (legendPopup) legendPopup.style.display = 'block';
+
+  // Update glossary and popups
+  updatePopupPositions();
+  updateGlossary();
+  chart.redraw();
+}, 1000); // delay to ensure everything is initialized
+
+// --- Inline info buttons for layer definitions (replaces glossary button temporarily) ---
+document.querySelectorAll('.info-button').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const layer = btn.dataset.info;
+
+    let message = '';
+    if (layer === 'cone') {
+      message = "The Cone of Uncertainty shows where the center of the storm is most likely to travel. Impacts like wind, rain, and flooding can happen far outside the cone.";
+    } else if (layer === 'path') {
+      message = "The Storm Path represents the observed and forecasted movement of the hurricane, with markers showing its changing intensity.";
+    }
+
+    // Simple popup near the button
+    const existingPopup = document.getElementById('layer-info-popup');
+    if (existingPopup) existingPopup.remove();
+
+    const popup = document.createElement('div');
+    popup.id = 'layer-info-popup';
+    popup.textContent = message;
+    popup.style.position = 'absolute';
+    popup.style.background = '#1b1b1b';
+    popup.style.color = 'white';
+    popup.style.padding = '10px 12px';
+    popup.style.borderRadius = '8px';
+    popup.style.fontSize = '13px';
+    popup.style.maxWidth = '220px';
+    popup.style.lineHeight = '1.4';
+    popup.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    popup.style.zIndex = '9999';
+    popup.style.transition = 'opacity 0.2s';
+    popup.style.opacity = '0';
+
+    // Position it near the clicked button
+    const rect = btn.getBoundingClientRect();
+    popup.style.left = `${rect.right + 8}px`;
+    popup.style.top = `${rect.top - 4 + window.scrollY}px`;
+
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.style.opacity = '1');
+    popup.classList.add('show');
+
+
+    // Auto-close after 5 seconds or on outside click
+    setTimeout(() => popup.remove(), 5000);
+    document.addEventListener('click', (ev) => {
+      if (!popup.contains(ev.target) && ev.target !== btn) popup.remove();
+    }, { once: true });
+  });
+});
+
+// --- Info popup for Storm Path Legend ---
+const legendInfoButton = document.getElementById("storm-legend-info");
+if (legendInfoButton) {
+  legendInfoButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    // Remove any existing popup
+    const existingPopup = document.getElementById("legend-info-popup");
+    if (existingPopup) existingPopup.remove();
+
+    // Create popup
+    const popup = document.createElement("div");
+    popup.id = "legend-info-popup";
+    popup.innerHTML = `
+  <b>Understanding Storm Categories</b><br/><br/>
+  <div style="
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    row-gap: 6px;
+    margin-left: -15px; /* nudges entire icon column slightly left */
+  ">
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: gray; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Tropical Storm (TS)</b>: Winds of 39–73 mph. May cause flooding, fallen branches, and isolated power outages.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: white; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 1</b>: 74–95 mph. Some roof, siding, and tree damage possible; short power losses.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FFFF00; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 2</b>: 96–110 mph. Stronger damage to roofs and windows; several-day outages common.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #FFA500; font-size: 22px; transform: scale(1.1); line-height: 20px;">▲</div>
+    <div><b>Category 3</b>: 111–129 mph. Major structural damage; water and power unavailable for days to weeks.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FF0000; font-size: 21px; transform: scale(2.2); line-height: 20px;">■</div>
+    <div><b>Category 4</b>: 130–156 mph. Severe structural failures; many trees down; long recovery times.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #8B0000; font-size: 22px; transform: scale(1.1); line-height: 20px;">⬟</div>
+    <div><b>Category 5</b>: ≥157 mph. Catastrophic damage; widespread destruction and unlivable areas.</div>
+
+  </div>
+  <br/>
+  <em>Note:</em> Heavy rain, storm surge, and flooding can occur far from the storm’s center — even outside these path points.
+`;
+
+
+  
+
+
+    Object.assign(popup.style, {
+      position: "absolute",
+      background: "rgba(35,35,35,0.96)",
+      border: "1.5px solid rgba(255,255,255,0.25)",
+      backdropFilter: "blur(10px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+      borderRadius: "8px",
+      padding: "14px 16px",
+      fontSize: "13.5px",
+      lineHeight: "1.5",
+      color: "white",
+      maxWidth: "320px",
+      zIndex: "9999",
+      transition: "opacity 0.2s ease",
+      opacity: "0",
+    });
+
+    // Append first so we can measure
+    document.body.appendChild(popup);
+
+    const legendBox = document.getElementById("popup-path");
+    const rect = legendBox.getBoundingClientRect();
+
+    // Calculate page-relative coordinates
+    const top = rect.top + window.scrollY;
+    const left = rect.left + window.scrollX;
+
+    // Measure popup height after render
+    const popupHeight = popup.offsetHeight;
+
+    // Position ABOVE the legend
+    const popupTop = Math.max(top - popupHeight - 20, 20); // 20px gap, min 20px from top
+    const popupLeft = left + rect.width / 2 - popup.offsetWidth / 2;
+
+    popup.style.top = `${popupTop}px`;
+    popup.style.left = `${popupLeft}px`;
+
+    requestAnimationFrame(() => (popup.style.opacity = "1"));
+
+    // Remove when clicked outside or after 15s
+    const removePopup = () => popup.remove();
+    setTimeout(removePopup, 15000);
+    document.addEventListener(
+      "click",
+      (ev) => {
+        if (!popup.contains(ev.target) && ev.target !== legendInfoButton)
+          removePopup();
+      },
+      { once: true }
+    );
+  });
+}
+
+
 
 })();

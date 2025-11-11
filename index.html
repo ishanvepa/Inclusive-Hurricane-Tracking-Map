@@ -63,7 +63,7 @@
             <h2>Features</h2>
             <ul>
               <li><strong>Layer toggles:</strong> Show/hide key storm features like the Cone of Uncertainty and Storm Path.</li>
-              <li><strong>Glossary:</strong> Plain-language explanations of hurricane terms.</li>
+              <!--<li><strong>Glossary:</strong> Plain-language explanations of hurricane terms.</li> -->
               <li><strong>Storm Path Legend:</strong> Easy visual guide to storm intensity symbols.</li>
               <li><strong>POI search:</strong> Enter addresses or use your location to view storm impact nearby.</li>
               <li><strong>Wiki Maps:</strong> Region summaries in plain English, optimized for screen readers.</li>
@@ -99,8 +99,23 @@
             </div>  
 
             <div class="popup-content">
-              <label><input type="checkbox" class="layer-checkbox" data-layer="cone"> Cone of Uncertainty</label><br />
-              <label><input type="checkbox" class="layer-checkbox" data-layer="path"> Storm Path</label><br />
+              <label>
+                <input type="checkbox" class="layer-checkbox" data-layer="cone">
+                Cone of Uncertainty
+                <button class="info-button" data-info="cone" aria-label="Definition: Cone of Uncertainty">
+                  <img src="media/question.svg" alt="Cone definition" width="14" height="14" />
+                </button>
+              </label><br />
+              
+              <label>
+                <input type="checkbox" class="layer-checkbox" data-layer="path">
+                Storm Path
+                <button class="info-button" data-info="path" aria-label="Definition: Storm Path">
+                  <img src="media/question.svg" alt="Path definition" width="14" height="14" />
+                </button>
+              </label><br />
+              
+
               <div class="legend-suboption" data-parent="path" style="display: none; padding-left: 20px; margin-top: 4px; margin-bottom: 8px;">
                 <label>
                   <input type="checkbox" class="legend-subcheckbox" data-target="path" checked>
@@ -113,12 +128,16 @@
         </div>
 
         <!-- Glossary Button -->
+        <!-- Glossary Button temporarily disabled (kept for JS stability) -->
+        <button id="glossary-button" style="display: none;" disabled aria-hidden="true"></button>
+
+        <!--
         <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0" data-tooltip="View hurricane-related terms and definitions">
           <div class="glossary-button-inner">
             <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
             <span id="glossary-notification"></span>
           </div>
-        </button>
+        </button> -->
 
         <!-- POI Button -->
         <button class="taskbar-button" id="poi-button" aria-label="Open points of interest" tabindex="0" data-tooltip="Search or add locations to the map">
@@ -343,8 +362,13 @@
 
     <!-- Storm Path Legend -->
     <div class="layer-popup" id="popup-path" tabindex="0" aria-label="Storm path legend panel">
-      <h3>Storm Path Legend</h3>
-      <div style="padding: 10px;">
+      <h2 class="popup-title">
+        Storm Path Legend
+        <button class="info-button" id="storm-legend-info" aria-label="Storm Path explanation">
+          <img src="media/question.svg" alt="Legend info" width="14" height="14" style="filter: invert(1);" />
+        </button>
+      </h2>
+      <div >
         <div class="legend-container">
           <div class="legend-item"><span class="symbol circle" style="color: gray;">●</span><span>TS</span></div>
           <div class="legend-item"><span class="symbol circle" style="color: white;">●</span><span>Cat 1</span></div>
