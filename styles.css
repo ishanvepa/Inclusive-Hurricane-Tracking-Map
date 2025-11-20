@@ -1,16 +1,4 @@
 /* ====== Base Layout ====== */
-#map-container {
-  height: 100%;
-  min-width: 320px;
-  max-width: 100%;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-#map-container:focus {
-  outline: 2px solid #0077cc; 
-}
-
 html, body {
   height: 100%;
   margin: 0;
@@ -19,105 +7,92 @@ html, body {
   padding: 0;
 }
 
-.loading {
-  margin-top: 10em;
-  text-align: center;
-  color: gray;
+#map-container {
+  height: 100%;
+  width: 100%;
+  min-width: 320px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+#map-container:focus {
+  outline: 2px solid #0077cc; 
 }
 
 #map-wrapper {
   position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
-#map-title-box {
+/* ====== Unified Header ====== */
+#unified-header {
   position: absolute;
   top: 20px;
-  left: 10px;
-  height: 40px;
-  display: flex;
-  align-items: center;
+  left: 20px;
   background-color: rgba(0, 0, 0, 0.85);
   color: white;
   border-radius: 20px;
-  padding: 0 20px; 
+  padding: 16px 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
 
-
-#map-title-box h1 {
+#unified-header h1 {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
   line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#button-row {
   display: flex;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-
-#about-button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-#about-button img {
-  width: 18px;
-  height: 18px;
-  filter: invert(1); /* makes black icon appear white */
-}
-
-
-
-
-
-/* ====== Taskbar Buttons ====== */
-#taskbar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  height: auto;
-  background-color: rgba(0, 0, 0, 0.85);
-  border-radius: 20px !important;
-  display: flex;
-  align-items: center;
-  padding: 0px 20px;
-  gap: 24px;
-  box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
-  z-index: 1000;
-  overflow: visible;
-}
-
-.taskbar-button {
+.header-button {
   background: none;
   border: none;
   padding: 6px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.taskbar-button:hover,
-.taskbar-button:focus {
+.header-button:hover,
+.header-button:focus {
   background-color: #005FCC;
   outline: none;
 }
 
-.taskbar-button.active {
-  background-color: #0077cc; 
+.header-button.active {
+  background-color: #0077cc;
 }
 
-
-.taskbar-button img {
+.header-button img {
   display: block;
   width: auto;
-  height: 24px;
-  padding: 2px;
+  height: 20px;
+}
+
+#time-toggle img,
+#about-button img {
+  filter: invert(1);
+  width: 16px;
+  height: 16px;
 }
 
 .zoom-button {
@@ -126,233 +101,52 @@ html, body {
   color: white;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 8px; /* match .taskbar-button */
-  padding: 6px;
-  background: none;
-  border: none;
-  transition: background-color 0.2s ease;
 }
 
-.zoom-button::after {
-  font-size: 12px !important;
-  font-weight: normal !important;
-}
-
-.info-button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-left: 6px;
-  cursor: pointer;
-  vertical-align: middle;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-.info-button:hover {
-  opacity: 1;
-}
-
-.info-button img {
-  filter: invert(1); /* makes black icons white */
-}
-
-#layer-info-popup {
-  background: rgba(35, 35, 35, 0.96);        /* slightly darker for contrast */
-  border: 1.5px solid rgba(255, 255, 255, 0.25); /* brighter edge */
-  backdrop-filter: blur(10px) brightness(1.05);  /* more pronounced glass effect */
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6),    /* deeper shadow */
-              0 0 8px rgba(255, 255, 255, 0.08); /* soft outer glow */
-  color: white;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  max-width: 240px;
-  line-height: 1.45;
-  transition: opacity 0.2s ease, transform 0.15s ease;
-  transform: scale(1.02);
-  z-index: 9999;
-
-}
-
-#layer-info-popup.show {
-  transform: scale(1.03);
-  opacity: 1;
-}
-
-#legend-info-popup {
-  pointer-events: auto;
-  animation: fadeIn 0.2s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-
-
-
-/* ====== Popups (Glossary, Layers, POI) ====== */
-.popup {
-  display: none;
-  font-size: 0.95em;
+/* Tooltip for header buttons */
+.header-button::after {
+  content: attr(data-tooltip);
   position: absolute;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 1em;
-  border-radius: 20px;
-  z-index: 999;
-  width: 250px;
-}
-
-#poi-popup .popup-content p {
-  margin-top: 0 !important;
-  margin-bottom: 0.5em !important;
-  font-size: 0.8rem;
-}
-
-#poi-button img {
-  width: 18px;
-  height: 20px;
-}
-
-
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0px !important;
-}
-
-.popup-heading {
-  display: flex;
-  align-items: center;
-  gap: 0em; 
-}
-
-.popup-icon {
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 8px;
-  transform: translateY(-6.5px); 
-}
-
-.glossary-icon {
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
-.popup-header .close-popup {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(-5px);
-}
-
-.popup-header .close-popup img {
-  display: block;
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-.layer-popup {
-  display: none;
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  align-items: center;
-  padding: 0.2em 1em;
-  border-radius: 20px;
-  z-index: 999;
-  width: 280px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-#poi-popup {
-  width: 240px;
-  padding: 1em;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: rgba(0, 0, 0, 0.85);
-  border-radius: 20px;
-  color: white;
-  text-align: center;
-}
-
-.location-list {
-  list-style: none;       
-  padding: 0;          
-  margin-top: 10px;
-}
-
-.location-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1); 
-  padding: 4px 8px;
+  color: #fff;
+  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 0.9em;
-  color: white;          
-  text-align: left;
-  margin-bottom: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10000;
 }
 
-.location-list li span {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9em;
-  font-weight: normal;
-  line-height: 1.2;
+.header-button:hover::after,
+.header-button:focus::after {
+  opacity: 1;
 }
 
+/* Time dropdown */
+#time-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+}
 
-
-.remove-location {
-  background: none;
-  border: none;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 2px 6px;
+.dropdown-menu {
+  display: none;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
   border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.remove-location:hover {
-  background: rgba(255, 255, 255, 0.15); /* subtle hover */
-}
-
-
-.popup-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
-  margin-bottom: 0.75em;
-  line-height: 1.1em;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-
-.dropdown-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
+  padding: 6px 0;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 14px;
+  z-index: 9999;
+  width: 220px;
 }
 
 .dropdown-menu .dropdown-item {
@@ -368,46 +162,103 @@ html, body {
   outline: none;
 }
 
-#time-toggle {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  margin-left: 4px;
+/* ====== Popup Wrappers - FIXED POSITIONING ====== */
+.button-popup-wrapper {
+  position: fixed !important;
+  top: 100px !important;
+  left: 20px !important;
+  z-index: 10000 !important;  /* Increased z-index */
 }
 
-#time-toggle img {
+/* ====== Popups ====== */
+.popup {
+  display: none;  /* Hidden by default */
+  font-size: 0.95em;
+  position: relative;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 1em;
+  border-radius: 20px;
+  width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;  /* Re-enable clicks on popup itself */
+}
+
+/* When popup is visible */
+.popup[style*="display: block"] {
+  display: block !important;
+}
+
+/* Specific popup adjustments if needed */
+#poi-popup {
+  width: 240px;
+}
+
+#wiki-popup,
+#layers-popup,
+#sonification-popup {
+  width: 250px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;
+}
+
+.popup-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.popup-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+}
+
+.popup-header .close-popup {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-header .close-popup img {
+  display: block;
   width: 16px;
   height: 16px;
-  filter: invert(1); /* white on dark */
 }
 
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 30px;
-  background-color: #222;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 0;
-  max-height: 200px;
-  overflow-y: auto;
-  font-size: 14px;
-  z-index: 9999;
-  width: 220px;
+.popup-content {
+  margin-top: 0.75em;
 }
 
-.dropdown-menu div {
-  padding: 6px 12px;
-  cursor: pointer;
+/* ====== POI Popup Specific ====== */
+#poi-popup {
+  width: 240px;
 }
 
-.dropdown-menu div:hover {
-  background-color: #444;
+#poi-popup .popup-content p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
 }
-
 
 #location-input {
   width: 100%;
@@ -436,37 +287,142 @@ html, body {
   text-decoration: none;
 }
 
-#message {
-  font-size: 9px !important;
-  margin-top: 0.25em;
+.location-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
 }
 
-
-/* ====== Legend Styling ====== */
-.legend-container {
+.location-list li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-
-.legend-item {
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  color: white;
+  margin-bottom: 6px;
 }
 
-#popup-path {
-  background: rgba(25, 25, 25, 0.95);
-  border-radius: 10px;
-  padding: 4px 12px 6px 12px;
+.remove-location {
+  background: none;
+  border: none;
   color: white;
-  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.remove-location:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#message {
+  font-size: 12px;
+  margin-top: 0.5em;
+}
+
+/* ====== Wiki Container ====== */
+.wiki-container {
+  padding: 8px 0;
+}
+
+.wiki-item {
+  margin-bottom: 0.75em;
+}
+
+.wiki-link {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ====== About/Info Modals ====== */
+/* About popup - wider and scrollable */
+#about-popup {
+  width: 500px !important;  /* Much wider than standard popups */
+  max-width: 90vw;  /* But don't exceed 90% of viewport width */
+  max-height: 70vh;  /* Maximum height is 70% of viewport height */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  overflow-x: hidden;  /* Prevent horizontal scrolling */
+}
+
+/* Better spacing for about content */
+#about-popup .popup-content {
+  padding-right: 8px;  /* Space for scrollbar */
+}
+
+#about-popup .popup-content h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  color: #90cdf4;
+}
+
+#about-popup .popup-content h3:first-child {
+  margin-top: 0;  /* No margin on first heading */
+}
+
+#about-popup .popup-content p {
+  margin-bottom: 0.75em;
+  line-height: 1.5;
+}
+
+#about-popup .popup-content ul {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+#about-popup .popup-content li {
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+/* Custom scrollbar styling for about popup */
+#about-popup::-webkit-scrollbar {
+  width: 8px;
+}
+
+#about-popup::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#about-popup::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#about-popup::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* For Firefox */
+#about-popup {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure about popup wrapper doesn't restrict size */
+#about-popup-wrapper {
+  width: auto !important;
+}
+
+/* ====== Layer Legend Popup ====== */
+.layer-popup {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 10px;
+  background: rgba(25, 25, 25, 0.95);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  z-index: 999;
   width: fit-content;
 }
-
 
 #popup-path .legend-container {
   display: grid;
@@ -475,49 +431,16 @@ html, body {
   row-gap: 4px;
   justify-content: center;
   align-items: center;
-  margin-top: 4px; /* subtle space below title */
+  margin-top: 8px;
 }
 
-#popup-path .popup-title {
-  display: flex;
-  align-items: center;         /* ensures vertical centering */
-  justify-content: flex-start; /* left-aligns title and icon */
-  gap: 6px;                    /* small space between text and icon */
-  margin: 10px 0 10px 0;        
-
-  color: white;
-  line-height: 1.2;
-}
-
-#popup-path .info-button {
-  display: flex;
-  align-items: center;         /* vertically center the image */
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-#popup-path .info-button img {
-  width: 15px;                 /* slightly larger for better alignment */
-  height: 15px;
-  filter: invert(1);
-  transform: translateY(1px);  /* fine-tune: nudges the icon down a hair to center with text */
-}
-
-#popup-path .legend-item {
+.legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  line-height: 1.1;
 }
 
-
-
-/* keep your existing symbol styles */
 #popup-path span.symbol {
   display: inline-block;
   width: 24px;
@@ -528,11 +451,6 @@ html, body {
   -webkit-text-stroke: 1px white;
 }
 
-#popup-path span.triangle,
-#popup-path span.pentagon {
-  transform: scale(0.8);
-}
-
 #popup-path span.circle {
   transform: scale(1.5);
 }
@@ -541,105 +459,42 @@ html, body {
   transform: scale(1.7);
 }
 
-
-/* ====== Glossary Popup ====== */
-#glossary-popup {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
-  left: 10px;
-  max-height: 370px;
-  max-width: 400px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  border-radius: 15px;
-  z-index: 999;
-  display: none;
-  flex-direction: column;
-  overflow: hidden; /* prevent the header from scrolling */
+#popup-path span.triangle,
+#popup-path span.pentagon {
+  transform: scale(0.8);
 }
 
-#glossary-button {
-  position: relative;
-}
-
-.glossary-button-inner {
-  position: relative;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-}
-
-#glossary-header {
-  margin-bottom: 0px;
-}
-
-#glossary-title {
-  font-size: 1.4em;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
-}
-
-#glossary-header hr {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.7);
-  margin-top: 6px;
-  margin-bottom: 0;
-}
-
-.glossary-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+/* ====== Info Buttons ====== */
+.info-button {
   background: none;
   border: none;
   padding: 0;
+  margin-left: 6px;
   cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(2px);
+  vertical-align: middle;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.glossary-close img {
-  display: block;
-  width: 18px;
-  height: 18px;
+.info-button:hover {
+  opacity: 1;
 }
 
-
-#glossary-content-container {
-  height: 100%;
-  max-height: calc(370px - 50px); /* adjust based on header height */
-  overflow-y: auto;
-  padding: 10px;
-  box-sizing: border-box;
+.info-button img {
+  filter: invert(1);
 }
 
-
-.glossary-icon-wrapper {
-  position: relative;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
+/* ====== Accessibility ====== */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
 }
 
-#glossary-notification {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 10px;
-  height: 10px;
-  background-color: rgba(255, 0, 0, 0.9);
-  border-radius: 50%;
-  display: block;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* ====== POI Marker ====== */
+/* ====== POI Marker Animation ====== */
 .pulse-marker {
   width: 16px;
   height: 16px;
@@ -652,154 +507,27 @@ html, body {
   z-index: 10;
 }
 
-
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0.4); }
   70% { box-shadow: 0 0 0 15px rgba(3, 132, 252, 0); }
   100% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0); }
 }
 
-#message {
-  font-size: 12px;
+#map-wrapper {
+  position: fixed !important;  /* Changed from relative */
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
-/* ====== Wiki Panel ====== */
-#popup-wiki h3 {
-  margin: 0;
-  padding: 6px 10px;
-  font-size: 1em;
-  text-align: left;
-}
-
-.wiki-container {
-  padding: 8px 10px;
-}
-
-.wiki-item {
-  margin-bottom: 0.75em;
-}
-
-.wiki-link {
-  color: #fff;
-  text-decoration: underline;
-}
-
-.wiki-link::after {
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M14 3h7v7h-2V6.414l-9.293 9.293-1.414-1.414L17.586 5H14V3z'/%3E%3Cpath fill='%23fff' d='M5 5h5V3H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5h-2v5H5V5z'/%3E%3C/svg%3E");
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 4px;
-  width: 1em;
-  height: 1em;
-}
-
-
-/* ====== Accessibility ====== */
-.visually-hidden {
+#map-container {
   position: absolute !important;
-  height: 1px;
-  width: 1px;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 320px;
+  margin: 0;
   overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
-  white-space: nowrap;
 }
-
-.highcharts-title {
-  font-size: 20px !important;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.taskbar-button {
-  position: relative;
-}
-
-/* ====== Tool tip styling ====== */
-.taskbar-button::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 10000;
-}
-
-.taskbar-button:hover::after,
-.taskbar-button:focus::after {
-  opacity: 1;
-}
-
-/* about popup */
-
-.about-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  z-index: 9999;
-  max-width: 50%;
-  max-height: 75vh;
-  overflow-y: auto;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-
-.about-popup-content {
-  position: relative;
-}
-
-.about-popup .close-popup {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.about-inner {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95em;
-  line-height: 1.6;
-}
-
-.about-inner h1 {
-  font-size: 1.5em;
-  margin-bottom: 0.5em;
-}
-
-.about-inner h2 {
-  font-size: 1.2em;
-  color: #90cdf4;
-}
-
-.about-inner ul {
-  padding-left: 1.2em;
-}
-
-.about-inner li {
-  margin-bottom: 0.5em;
-}
-
-.about-inner a {
-  color: #90cdf4;
-  text-decoration: underline;
-}
-
-.about-inner a:hover {
-  text-decoration: none;
-}
- 

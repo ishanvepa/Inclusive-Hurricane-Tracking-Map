@@ -1,3 +1,13 @@
+console.log("=== DEBUGGING BUTTON SETUP ===");
+console.log("Layers button:", document.getElementById('layers-button'));
+console.log("Layers popup:", document.getElementById('layers-popup'));
+console.log("POI button:", document.getElementById('poi-button'));
+console.log("POI popup:", document.getElementById('poi-popup'));
+console.log("Wiki button:", document.getElementById('wiki-button'));
+console.log("Wiki popup:", document.getElementById('wiki-popup'));
+console.log("Sonification button:", document.getElementById('sonification-button'));
+console.log("Sonification popup:", document.getElementById('sonification-popup'));
+
 // Load and parse hurricane CSV data
 async function loadCSV(path) {
   const response = await fetch(path);
@@ -129,9 +139,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const timeToggle = document.getElementById('time-toggle');
   let currentStartIndex = 0;
   
-  timeToggle.addEventListener('click', () => {
-    timeDropdown.style.display = timeDropdown.style.display === 'block' ? 'none' : 'block';
-  });
   
   function updateHurricaneSeries() {
     const path = chart.series.find(s => s.name === "Hurricane Path");
@@ -385,68 +392,86 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   }
   window.addEventListener('resize', () => {
     resizeChart();
-    positionTaskbarBelowTitle();
   });
 
-  // Adjust taskbar based on chart title position
-  function positionTaskbarBelowTitle() {
-    const chartContainer = document.getElementById('map-container');
-    const taskbar = document.getElementById('taskbar');
-    const title = chartContainer.querySelector('.highcharts-title');
-    if (title && taskbar) {
-      const titleBBox = title.getBBox();
-      taskbar.style.top = `${titleBBox.y + titleBBox.height + 20}px`;
-    }
-  }
-  positionTaskbarBelowTitle();
 
   // Button popup toggle
   function setupToggle(buttonId, popupId) {
     const button = document.getElementById(buttonId);
     const popup = document.getElementById(popupId);
+    
+    console.log(`Setting up ${buttonId} -> ${popupId}`);
+    console.log(`  Button found:`, button);
+    console.log(`  Popup found:`, popup);
+    
+    if (!button) {
+      console.error(`Button not found: ${buttonId}`);
+      return;
+    }
+    
+    if (!popup) {
+      console.error(`Popup not found: ${popupId}`);
+      return;
+    }
+    
     const closeBtn = popup.querySelector('.close-popup');
+    
+    if (!closeBtn) {
+      console.warn(`Close button not found in popup: ${popupId} (might be a dropdown)`);
+    }
   
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
+      console.log(`Button clicked: ${buttonId}`);
       const isVisible = popup.style.display === 'block';
   
-      // Close all other popups and remove active classes
+      // Close ALL popups and dropdowns
       document.querySelectorAll('.popup').forEach(p => {
-        if (p.id !== 'glossary-popup') {
-          p.style.display = 'none';
-        }
+        p.style.display = 'none';
       });
-      document.querySelectorAll('.taskbar-button').forEach(btn => {
+      document.querySelectorAll('.dropdown-menu').forEach(d => {
+        d.style.display = 'none';
+      });
+      
+      // Remove active class from all header buttons
+      document.querySelectorAll('.header-button').forEach(btn => {
         btn.classList.remove('active');
       });
   
-      if (buttonId === "glossary-button") {
-        document.getElementById("glossary-notification").style.display = "none";
-        glossaryNotification = false;
-      }
-  
+      // Toggle the clicked popup/dropdown
       if (isVisible) {
         popup.style.display = 'none';
         button.classList.remove('active');
-        button.blur(); // ← removes focus so gray background goes away
+        button.blur();
+        console.log(`  Closed ${popupId}`);
       } else {
         popup.style.display = 'block';
         button.classList.add('active');
+        console.log(`  Opened ${popupId}`);
       }
     });
   
-    closeBtn.addEventListener('click', () => {
-      popup.style.display = 'none';
-      button.classList.remove('active');
-      button.blur(); // ← same here, to remove highlight if 'X' was last clicked
-    });
+    // Add close button handler if it exists
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        console.log(`Close button clicked for ${popupId}`);
+        popup.style.display = 'none';
+        button.classList.remove('active');
+        button.blur();
+      });
+    }
+    
+    console.log(`  Setup complete for ${buttonId}`);
   }
   
-  
-  setupToggle('glossary-button', 'glossary-popup');
-  setupToggle('poi-button', 'poi-popup');
+  console.log("=== CALLING setupToggle ===");
+  setupToggle('time-toggle', 'time-dropdown');      // Add this line
+  setupToggle('about-button', 'about-popup');       // Add this line
   setupToggle('layers-button', 'layers-popup');
+  setupToggle('poi-button', 'poi-popup');
   setupToggle('wiki-button', 'wiki-popup');
   setupToggle('sonification-button', 'sonification-popup');
+  console.log("=== setupToggle calls complete ===");
   
   // Sonification controls
   const autoSonifyCheckbox = document.getElementById('auto-sonify');
@@ -730,15 +755,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   // Optional: focus map container for keyboard navigation
   document.getElementById('map-container').focus();
 
-  document.getElementById("about-button").addEventListener("click", () => {
-    const popup = document.getElementById("about-popup");
-    popup.style.display = "block";
-    popup.focus();
-  });
-  
-  document.querySelector("#about-popup .close-popup").addEventListener("click", () => {
-    document.getElementById("about-popup").style.display = "none";
-  });
 
 
   // Zoom controls

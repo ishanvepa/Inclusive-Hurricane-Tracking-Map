@@ -3,14 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Inclusive Hurricane Tracking Map</title>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css"/>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@300;400;500;600&display=swap');
     </style>
-
-    <!-- External Libraries -->
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <script src="https://code.highcharts.com/maps/highmaps.js"></script>
     <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
@@ -22,343 +18,392 @@
   </head>
 
   <body>
-    <!-- Map and Interactive Controls -->
-
-    <div id="map-title-box" class="corner-box">
+    <!-- Unified Header -->
+    <div id="unified-header">
       <h1 id="storm-title">Hurricane Michael 2018</h1>
-    
-      <div class="dropdown-wrapper">
-        <button id="time-toggle" aria-label="Select forecast time">
+      
+      <div id="button-row">
+        <button class="header-button" id="time-toggle" aria-label="Select forecast time" data-tooltip="Select forecast time">
           <img src="media/down2.svg" alt="Choose time" />
         </button>
-        <div id="time-dropdown" class="dropdown-menu" role="listbox" tabindex="0" aria-label="Select a forecast time"></div>
+        
+        <button class="header-button" id="about-button" aria-label="About this page" data-tooltip="About this page">
+          <img src="media/question.svg" alt="About" />
+        </button>
+        <div id="about-dropdown" class="dropdown-menu" tabindex="0" aria-label="Select a forecast time"></div>
+        
+        <button class="header-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle layers">
+          <img src="media/layers.png" alt="Layers" width="25" height="25" />
+        </button>
+
+        <button class="header-button" id="poi-button" aria-label="Open points of interest" data-tooltip="Add locations">
+          <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
+        </button>
+        
+        <button class="header-button" id="wiki-button" aria-label="Open Wiki Maps" data-tooltip="Wiki Maps">
+          <img src="media/information.png" alt="wiki" width="25" height="25" />
+        </button>
+
+        <button class="header-button" id="sonification-button" aria-label="Audio sonification" data-tooltip="Storm audio">
+          <img src="media/sonifylogo.png" alt="Sonification" width="20" height="23" style="filter: hue-rotate(120deg);" />
+        </button>
+
+        <button class="header-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">−</button>
+        <button class="header-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
       </div>
+
       
-    
-      <button id="about-button" aria-label="About this page">
-        <img src="media/question.svg" alt="About" />
+    </div>
+
+    <!-- Time Dropdown Wrapper -->
+    <div class="button-popup-wrapper" id="time-dropdown-wrapper">
+      <div id="time-dropdown" class="dropdown-menu popup" role="listbox" tabindex="0" aria-label="Select a forecast time">
+        <!-- Dropdown items will be added by JavaScript -->
+      </div>
+    </div>
+
+    <!-- About Popup -->
+    <!-- About Popup -->
+<div class="button-popup-wrapper" id="about-popup-wrapper">
+  <div class="popup" id="about-popup" role="dialog" aria-labelledby="about-title" tabindex="-1">
+    <div class="popup-header">
+      <div class="popup-heading">
+        <img src="media/question.svg" alt="" class="popup-icon" width="18" height="18" style="filter: invert(1);"/>
+        <h2 class="popup-title" id="about-title">About</h2>
+      </div>
+      <button class="close-popup" aria-label="Close about">
+        <img src="media/close.svg" width="18" height="18" />
       </button>
+    </div>
+    
+    <div class="popup-content">
+      <h3>Hurricane Michael 2018</h3>
+      <p><strong>Hurricane Michael</strong> made landfall in the Florida Panhandle on <strong>October 10, 2018</strong> as a Category 5 storm. It caused catastrophic damage with winds of 160 mph, massive storm surge, and flooding across multiple states. The storm caused over $25 billion in damages and claimed more than 70 lives.</p>
+      <p>Using Hurricane Michael as a case study, this tool explores how we can better communicate risk and impact, especially for <strong>underserved, rural, or visually impaired users</strong>.</p>
+      
+      <h3>About This Page</h3>
+      <p>This map was designed to improve <strong>accessibility</strong>, <strong>clarity</strong>, and <strong>usability</strong> during hurricane events.</p>
+      
+      <h3>Features</h3>
+      <ul>
+        <li><strong>Layer toggles:</strong> Show/hide key storm features</li>
+        <li><strong>Storm Path Legend:</strong> Visual guide to storm intensity</li>
+        <li><strong>POI search:</strong> Enter addresses to view storm impact</li>
+        <li><strong>Wiki Maps:</strong> Region summaries in plain English</li>
+        <li><strong>Keyboard navigation:</strong> Fully accessible interface</li>
+      </ul>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+    
 
-      <div id="about-popup" class="about-popup" role="dialog" aria-labelledby="about-title" aria-modal="true" tabindex="-1" style="display: none;">
-        <div class="about-popup-content">
-          <button class="close-popup" data-target="about" aria-label="Close about section">
-            <img src="media/close.svg" alt="Close" width="18" height="18" />
+    <!-- Layers Popup -->
+    <div class="button-popup-wrapper" id="layers-popup-wrapper">
+      <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/layers.png" alt="" class="popup-icon" width="18" height="18" />
+            <h2 id="layers-title" class="popup-title">Map Layers</h2>
+          </div>
+          <button class="close-popup" data-target="layers" aria-label="Close layers">
+            <img src="media/close.svg" alt="" width="18" height="18" />
           </button>
-          <div class="about-inner">
-            <h2 id="about-title">
-              <img src="media/question.svg" alt="About" style="width: 18px; height: 18px; filter: invert(1); vertical-align: middle; margin-right: 0.4em;" />
+        </div>  
+        <div class="popup-content">
+          <label>
+            <input type="checkbox" class="layer-checkbox" data-layer="cone">
+            Cone of Uncertainty
+            <button class="info-button" data-info="cone" aria-label="Definition: Cone of Uncertainty">
+              <img src="media/question.svg" alt="Cone definition" width="14" height="14" />
+            </button>
+          </label><br />
+          
+          <label>
+            <input type="checkbox" class="layer-checkbox" data-layer="path">
+            Storm Path
+            <button class="info-button" data-info="path" aria-label="Definition: Storm Path">
+              <img src="media/question.svg" alt="Path definition" width="14" height="14" />
+            </button>
+          </label><br />
 
-              Hurricane Michael 2018
-            </h2>
-            
-            <p><strong>Hurricane Michael</strong> made landfall in the Florida Panhandle on <strong>October 10, 2018</strong> as a Category 5 storm. It caused catastrophic damage with winds of 160 mph, massive storm surge, and flooding across multiple states. The storm caused over $25 billion in damages and claimed more than 70 lives.</p>
-      
-            <p>Using Hurricane Michael as a case study, this tool explores how we can better communicate risk and impact — especially for <strong>underserved, rural, or visually impaired users</strong>.</p>
-      
-            <p>For feedback, questions, or collaboration opportunities, contact: <a href="mailto:example@email.com">example@email.com</a></p>
-      
-            <h1>About This Page</h1>
-            <p>This map was designed to improve <strong>accessibility</strong>, <strong>clarity</strong>, and <strong>usability</strong> during hurricane events. It's part of a research initiative on inclusive climate communication — ensuring everyone, regardless of disability, language fluency, or map literacy, can understand and act on storm information.</p>
-      
-            <h2>Features</h2>
-            <ul>
-              <li><strong>Layer toggles:</strong> Show/hide key storm features like the Cone of Uncertainty and Storm Path.</li>
-              <!--<li><strong>Glossary:</strong> Plain-language explanations of hurricane terms.</li> -->
-              <li><strong>Storm Path Legend:</strong> Easy visual guide to storm intensity symbols.</li>
-              <li><strong>POI search:</strong> Enter addresses or use your location to view storm impact nearby.</li>
-              <li><strong>Wiki Maps:</strong> Region summaries in plain English, optimized for screen readers.</li>
-              <li><strong>Keyboard navigation + ARIA support:</strong> Fully accessible interface.</li>
+          <div class="legend-suboption" data-parent="path" style="display: none; padding-left: 20px; margin-top: 4px; margin-bottom: 8px;">
+            <label>
+              <input type="checkbox" class="legend-subcheckbox" data-target="path" checked>
+              Show Legend
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POI Popup -->
+    <div class="button-popup-wrapper" id="poi-popup-wrapper">
+      <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/poi.png" alt="" class="popup-icon" width="15" height="18" />
+            <h2 id="poi-title" class="popup-title">Locations</h2>
+          </div>
+          <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+            <img src="media/close.svg" alt="" width="18" height="18" />
+          </button>
+        </div>            
+        <div class="popup-content">
+          <p>Add a location to explore more details</p>
+          <label for="location-input" class="visually-hidden">Enter address</label>
+          <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
+          <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
+          <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
+          <ul id="location-list" class="location-list"></ul>
+          <div id="message" role="status" aria-live="polite" tabindex="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wiki Popup -->
+    <div class="button-popup-wrapper" id="wiki-popup-wrapper">
+      <div class="popup" id="wiki-popup" role="dialog" aria-labelledby="wiki-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/information.png" alt="" class="popup-icon" width="18" height="18" />
+            <h2 id="wiki-title" class="popup-title">Wiki Maps</h2>
+          </div>
+          <button class="close-popup" data-target="wiki" aria-label="Close wiki">
+            <img src="media/close.svg" alt="" width="18" height="18" />
+          </button>
+        </div>  
+        <div class="popup-content">
+          <div class="wiki-container">
+            <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
+            <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
+            <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
+            <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sonification Popup -->
+    <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+      <div class="popup" id="sonification-popup" role="dialog" aria-labelledby="sonification-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/sonifylogo.png" alt="" class="popup-icon" width="15" height="18" style="filter: hue-rotate(120deg);" />
+            <h2 id="sonification-title" class="popup-title">Storm Sonification</h2>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="sonification-info-button" aria-label="Learn more about sonification" style="background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+              <img src="media/question.svg" alt="Help" width="18" height="18" style="filter: invert(1);" />
+            </button>
+            <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
+              <img src="media/close.svg" alt="" width="18" height="18" />
+            </button>
+          </div>
+        </div>
+
+        <div class="popup-content">
+          <p style="font-size: 13px; margin-bottom: 12px;">Hear the storm's intensity as sound while navigating through time.</p>
+          
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 13px;">
+              <input type="checkbox" id="auto-sonify" checked> Auto-play when changing time
+            </label>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <button id="play-current-point" style="width: 100%; padding: 8px; margin-bottom: 6px;">â–¶ Play Current Point</button>
+            <button id="play-sequence" style="width: 100%; padding: 8px;">â–¶ Play Full Sequence</button>
+          </div>
+
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a2947;">
+            <p style="font-size: 12px; color: #9fb3c8; margin-bottom: 8px;">Sound Mapping:</p>
+            <ul style="font-size: 11px; color: #9fb3c8; padding-left: 20px; line-height: 1.6;">
+              <li><strong>Wind:</strong> Pitch & speed of notes</li>
+              <li><strong>Pressure:</strong> Low drone intensity</li>
+              <li><strong>Category:</strong> Alert motifs</li>
+              <li><strong>Position:</strong> Stereo panning</li>
             </ul>
           </div>
         </div>
       </div>
-
-    </div>
-    
-    
-
-    <div id="map-wrapper" style="position: relative;">
-      <div id="taskbar">
-
-        <!-- Layer Toggle Button -->
-        <button class="taskbar-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle storm-related layers on the map" tabindex="0">
-          <img src="media/layers.png" alt="Layers" width="25" height="25" />
-        </button>
-
-        <!-- Layers Popup -->
-        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
-          <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
-            <div class="popup-header">
-              <div class="popup-heading">
-                <img src="media/layers.png" alt="" class="popup-icon" width="18" height="18" />
-                <h2 id="layers-title" class="popup-title">Map Layers</h2>
-              </div>
-              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
-                <img src="media/close.svg" alt="" width="18" height="18" />
-              </button>
-            </div>  
-
-            <div class="popup-content">
-              <label>
-                <input type="checkbox" class="layer-checkbox" data-layer="cone">
-                Cone of Uncertainty
-                <button class="info-button" data-info="cone" aria-label="Definition: Cone of Uncertainty">
-                  <img src="media/question.svg" alt="Cone definition" width="14" height="14" />
-                </button>
-              </label><br />
-              
-              <label>
-                <input type="checkbox" class="layer-checkbox" data-layer="path">
-                Storm Path
-                <button class="info-button" data-info="path" aria-label="Definition: Storm Path">
-                  <img src="media/question.svg" alt="Path definition" width="14" height="14" />
-                </button>
-              </label><br />
-              
-
-              <div class="legend-suboption" data-parent="path" style="display: none; padding-left: 20px; margin-top: 4px; margin-bottom: 8px;">
-                <label>
-                  <input type="checkbox" class="legend-subcheckbox" data-target="path" checked>
-                  Show Legend
-                </label>
-              </div>
-              <!-- <label><input type="checkbox" class="layer-checkbox" data-layer="wiki"> Wiki Maps</label> -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Glossary Button -->
-        <!-- Glossary Button temporarily disabled (kept for JS stability) -->
-        <button id="glossary-button" style="display: none;" disabled aria-hidden="true"></button>
-
-        <!--
-        <button class="taskbar-button" id="glossary-button" aria-label="Open glossary" tabindex="0" data-tooltip="View hurricane-related terms and definitions">
-          <div class="glossary-button-inner">
-            <img src="media/glossary.png" alt="Glossary" width="20" height="23" />
-            <span id="glossary-notification"></span>
-          </div>
-        </button> -->
-
-        <!-- POI Button -->
-        <button class="taskbar-button" id="poi-button" aria-label="Open points of interest" tabindex="0" data-tooltip="Search or add locations to the map">
-          <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
-        </button>
-
-        <!-- POI Popup -->
-        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
-          <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
-            <div class="popup-header">
-              <div class="popup-heading">
-                <img src="media/poi.png" alt="" class="popup-icon" width="15" height="18" />
-                <h2 id="poi-title" class="popup-title">Locations</h2>
-              </div>
-              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
-                <img src="media/close.svg" alt="" width="18" height="18" />
-              </button>
-            </div>            
-
-            <div class="popup-content">
-              <p>Add a location to explore more details</p>
-              <label for="location-input" class="visually-hidden">Enter address</label>
-              <input type="text" id="location-input" placeholder="Enter an address" tabindex="0">
-              <button id="current-location" tabindex="0" aria-label="Use your current location">Use Current Location</button>
-              <button id="add-location" tabindex="0" aria-label="Add location">Add Location</button>
-              <ul id="location-list" class="location-list"></ul>
-              <div id="message" role="status" aria-live="polite" tabindex="0"></div>
-            </div>
-
-          </div>
-        </div>
-        
-        <!-- Wiki Button -->
-        <button class="taskbar-button" id="wiki-button" aria-label="Open Wiki Maps Options" tabindex="0" data-tooltip="Explore written descriptions of each region on the map">
-          <img src="media/information.png" alt="wiki" width="25" height="25" />
-        </button>
-
-        <!-- Sonification Button -->
-        <button class="taskbar-button" id="sonification-button" aria-label="Audio sonification controls" tabindex="0" data-tooltip="Play storm data as sound">
-          <img src="media/sonifylogo.png" alt="Sonification" width="20" height="23" style="filter: hue-rotate(120deg);" />
-        </button>
-
-        <!-- Sonification Popup -->
-        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
-          <div class="popup" id="sonification-popup" role="dialog" aria-labelledby="sonification-title" aria-modal="true" tabindex="-1">
-            <div class="popup-header">
-              <div class="popup-heading">
-                <img src="media/sonifylogo.png" alt="" class="popup-icon" width="15" height="18" style="filter: hue-rotate(120deg);" />
-                <h2 id="sonification-title" class="popup-title">Storm Sonification</h2>
-              </div>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <button id="sonification-info-button" aria-label="Learn more about sonification" style="background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
-                  <img src="media/question.svg" alt="Help" width="18" height="18" style="filter: invert(1);" />
-                </button>
-                <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
-                  <img src="media/close.svg" alt="" width="18" height="18" />
-                </button>
-              </div>
-            </div>
-
-            <div class="popup-content">
-              <p style="font-size: 13px; margin-bottom: 12px;">Hear the storm's intensity as sound while navigating through time.</p>
-              
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; margin-bottom: 4px; font-size: 13px;">
-                  <input type="checkbox" id="auto-sonify" checked> Auto-play when changing time
-                </label>
-              </div>
-
-              <div style="margin-bottom: 12px;">
-                <button id="play-current-point" style="width: 100%; padding: 8px; margin-bottom: 6px;">▶ Play Current Point</button>
-                <button id="play-sequence" style="width: 100%; padding: 8px;">▶ Play Full Sequence</button>
-              </div>
-
-              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a2947;">
-                <p style="font-size: 12px; color: #9fb3c8; margin-bottom: 8px;">Sound Mapping:</p>
-                <ul style="font-size: 11px; color: #9fb3c8; padding-left: 20px; line-height: 1.6;">
-                  <li><strong>Wind:</strong> Pitch & speed of notes</li>
-                  <li><strong>Pressure:</strong> Low drone intensity</li>
-                  <li><strong>Category:</strong> Alert motifs</li>
-                  <li><strong>Position:</strong> Stereo panning</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sonification Info Modal (larger detailed view) -->
-        <div id="sonification-info-modal" class="about-popup" role="dialog" aria-labelledby="sonification-info-title" aria-modal="true" tabindex="-1" style="display: none;">
-          <div class="about-popup-content">
-            <button id="close-sonification-info" class="close-popup" data-target="sonification-info" aria-label="Close sonification information">
-              <img src="media/close.svg" alt="Close" width="18" height="18" />
-            </button>
-            
-            <div class="about-inner">
-              <h2 id="sonification-info-title">
-                <img src="media/sonifylogo.png" alt="" style="width: 18px; height: 18px; filter: hue-rotate(120deg); vertical-align: middle; margin-right: 0.4em;" />
-                Storm Sonification
-              </h2>
-              
-              <p><strong>Sonification</strong> is the use of sound to represent data. Just as a graph shows data visually, sonification lets you <em>hear</em> the data. This makes hurricane information accessible to low-vision and visually impaired users, and provides an additional sensory dimension for everyone.</p>
-              
-              <h1>Sound Mapping</h1>
-              <p>Four layers of sound work together to represent different aspects of the hurricane:</p>
-
-              <h2>🌪️ Wind Speed → Woodwinds (Flute-like)</h2>
-              <ul>
-                <li><strong>Low wind:</strong> Slow, lower-pitched notes with longer gaps</li>
-                <li><strong>High wind:</strong> Rapid, high-pitched frantic trills</li>
-                <li><strong>Volume:</strong> Gets louder as wind speed increases</li>
-              </ul>
-
-              <h2>🌡️ Atmospheric Pressure → Strings (Low Drone)</h2>
-              <ul>
-                <li><strong>High pressure (1015 mb):</strong> Higher pitch, quieter</li>
-                <li><strong>Low pressure (920 mb):</strong> Very low, ominous pitch with extra "growl"</li>
-                <li><strong>Special effect:</strong> Below 950 mb, an additional dissonant tone adds urgency</li>
-              </ul>
-
-              <h2>⚠️ Hurricane Category → Brass (Warning Motifs)</h2>
-              <ul>
-                <li><strong>Category 0-1:</strong> Single note warning</li>
-                <li><strong>Category 2:</strong> Two-note motif</li>
-                <li><strong>Category 3-5:</strong> Complex chord progressions (3-5 notes)</li>
-                <li><strong>Volume:</strong> Increases with category intensity</li>
-              </ul>
-
-              <h2>📍 Geographic Location → Stereo Position</h2>
-              <ul>
-                <li><strong>Longitude (East/West):</strong> Sound pans across left and right speakers/headphones</li>
-                <li><strong>Latitude (North/South):</strong> Subtle brightness changes via high-pass filter</li>
-              </ul>
-
-              <h1>How to Use</h1>
-              
-              <h2>🎧 For Best Experience</h2>
-              <ul>
-                <li>Use <strong>headphones or stereo speakers</strong> to hear spatial positioning</li>
-                <li>Start with <strong>auto-play enabled</strong> and click through different time points</li>
-                <li>Listen for <strong>all four layers</strong> playing simultaneously</li>
-                <li>Pay attention to how sounds change as the storm intensifies</li>
-              </ul>
-
-              <h2>📖 Three Ways to Listen</h2>
-              <ul>
-                <li><strong>Auto-play:</strong> Click through the time dropdown to hear each moment</li>
-                <li><strong>Play Current Point:</strong> Manually trigger sound for the selected time</li>
-                <li><strong>Play Full Sequence:</strong> Hear the entire storm evolution automatically (800ms per point)</li>
-              </ul>
-
-              <h1>Technical Details</h1>
-              <p><strong>Audio Engine:</strong> Tone.js (Web Audio API)</p>
-              <p><strong>Synthesis:</strong> Sawtooth (strings), Triangle (woodwinds), Square/Sawtooth (brass), Sine (position)</p>
-              <p><strong>Effects:</strong> Reverb, stereo panning, dynamic filtering</p>
-              <p><strong>Data Source:</strong> Hurricane Michael best track data (NOAA)</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- wiki Popup -->
-        <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
-          <div class="popup" id="wiki-popup" role="dialog" aria-labelledby="wiki-title" aria-modal="true" tabindex="-1">
-            <div class="popup-header">
-              <div class="popup-heading">
-                <img src="media/information.png" alt="" class="popup-icon" width="18" height="18" />
-                <h2 id="wiki-title" class="popup-title">Wiki Maps</h2>
-              </div>
-              <button class="close-popup" data-target="poi" aria-label="Close points of interest">
-                <img src="media/close.svg" alt="" width="18" height="18" />
-              </button>
-            </div>  
-
-
-            <div class="popup-content">
-              <div class="wiki-container">
-              <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
-              <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
-              <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
-              <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
-            </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Zoom Buttons -->
-        <button class="taskbar-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">–</button>
-        <button class="taskbar-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
-      </div>
     </div>
 
-    <!-- Glossary Popup -->
-    <div class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
-      <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-title" aria-modal="true" tabindex="-1">
-        
-        <!-- Close button in top-right corner -->
-        <button class="close-popup glossary-close" data-target="glossary" aria-label="Close glossary">
-          <img src="media/close.svg" alt="" width="18" height="18" />
-        </button>
-
-        <!-- Glossary Header -->
-        <div id="glossary-header">
+    <!-- Sonification Info Modal (larger detailed view) -->
+    <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+      <div class="popup" id="sonification-popup" role="dialog" aria-labelledby="sonification-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
           <div class="popup-heading">
-            <img src="media/glossary.png" alt="Glossary icon" class="glossary-icon" />
-            <h2 id="glossary-title">Glossary</h2>
+            <img src="media/sonifylogo.png" alt="" class="popup-icon" width="15" height="18" style="filter: hue-rotate(120deg);" />
+            <h2 id="sonification-title" class="popup-title">Storm Sonification</h2>
           </div>
-          <hr />
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="sonification-info-button" aria-label="Learn more about sonification" style="background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+              <img src="media/question.svg" alt="Help" width="18" height="18" style="filter: invert(1);" />
+            </button>
+            <button class="close-popup" data-target="sonification" aria-label="Close sonification controls">
+              <img src="media/close.svg" alt="" width="18" height="18" />
+            </button>
+          </div>
         </div>
 
-        <!-- Glossary Content -->
-        <div id="glossary-content-container">
-          <div id="glossary-content">
-            <!-- Glossary terms will be injected here -->
+        <div class="popup-content">
+          <p style="font-size: 13px; margin-bottom: 12px;">Hear the storm's intensity as sound while navigating through time.</p>
+          
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 13px;">
+              <input type="checkbox" id="auto-sonify" checked> Auto-play when changing time
+            </label>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <button id="play-current-point" style="width: 100%; padding: 8px; margin-bottom: 6px;"> ▶ Play Current Point</button>
+            <button id="play-sequence" style="width: 100%; padding: 8px;"> ▶ Play Full Sequence</button>
+          </div>
+
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a2947;">
+            <p style="font-size: 12px; color: #9fb3c8; margin-bottom: 8px;">Sound Mapping:</p>
+            <ul style="font-size: 11px; color: #9fb3c8; padding-left: 20px; line-height: 1.6;">
+              <li><strong>Wind:</strong> Pitch & speed of notes</li>
+              <li><strong>Pressure:</strong> Low drone intensity</li>
+              <li><strong>Category:</strong> Alert motifs</li>
+              <li><strong>Position:</strong> Stereo panning</li>
+            </ul>
           </div>
         </div>
-
       </div>
     </div>
 
+    <!-- Sonification Info Modal (larger detailed view) -->
+    <div id="sonification-info-modal" class="about-popup" role="dialog" aria-labelledby="sonification-info-title" aria-modal="true" tabindex="-1" style="display: none;">
+      <div class="about-popup-content">
+        <button id="close-sonification-info" class="close-popup" data-target="sonification-info" aria-label="Close sonification information">
+          <img src="media/close.svg" alt="Close" width="18" height="18" />
+        </button>
+        
+        <div class="about-inner">
+          <h2 id="sonification-info-title">
+            <img src="media/sonifylogo.png" alt="" style="width: 18px; height: 18px; filter: hue-rotate(120deg); vertical-align: middle; margin-right: 0.4em;" />
+            Storm Sonification
+          </h2>
+          
+          <p><strong>Sonification</strong> is the use of sound to represent data. Just as a graph shows data visually, sonification lets you <em>hear</em> the data. This makes hurricane information accessible to low-vision and visually impaired users, and provides an additional sensory dimension for everyone.</p>
+          
+          <h1>Sound Mapping</h1>
+          <p>Four layers of sound work together to represent different aspects of the hurricane:</p>
 
-    <!-- Highcharts Map Container -->
-    <div id="map-container" tabindex="0" aria-label="Interactive map (use arrow keys to pan)"></div>
+          <h2>🌪️ Wind Speed → Woodwinds (Flute-like)</h2>
+          <ul>
+            <li><strong>Low wind:</strong> Slow, lower-pitched notes with longer gaps</li>
+            <li><strong>High wind:</strong> Rapid, high-pitched frantic trills</li>
+            <li><strong>Volume:</strong> Gets louder as wind speed increases</li>
+          </ul>
+
+          <h2>🌡️ Atmospheric Pressure → Strings (Low Drone)</h2>
+          <ul>
+            <li><strong>High pressure (1015 mb):</strong> Higher pitch, quieter</li>
+            <li><strong>Low pressure (920 mb):</strong> Very low, ominous pitch with extra "growl"</li>
+            <li><strong>Special effect:</strong> Below 950 mb, an additional dissonant tone adds urgency</li>
+          </ul>
+
+          <h2>⚠️ Hurricane Category → Brass (Warning Motifs)</h2>
+          <ul>
+            <li><strong>Category 0-1:</strong> Single note warning</li>
+            <li><strong>Category 2:</strong> Two-note motif</li>
+            <li><strong>Category 3-5:</strong> Complex chord progressions (3-5 notes)</li>
+            <li><strong>Volume:</strong> Increases with category intensity</li>
+          </ul>
+
+          <h2>📍 Geographic Location → Stereo Position</h2>
+          <ul>
+            <li><strong>Longitude (East/West):</strong> Sound pans across left and right speakers/headphones</li>
+            <li><strong>Latitude (North/South):</strong> Subtle brightness changes via high-pass filter</li>
+          </ul>
+
+          <h1>How to Use</h1>
+          
+          <h2>🎧 For Best Experience</h2>
+          <ul>
+            <li>Use <strong>headphones or stereo speakers</strong> to hear spatial positioning</li>
+            <li>Start with <strong>auto-play enabled</strong> and click through different time points</li>
+            <li>Listen for <strong>all four layers</strong> playing simultaneously</li>
+            <li>Pay attention to how sounds change as the storm intensifies</li>
+          </ul>
+
+          <h2>📖 Three Ways to Listen</h2>
+          <ul>
+            <li><strong>Auto-play:</strong> Click through the time dropdown to hear each moment</li>
+            <li><strong>Play Current Point:</strong> Manually trigger sound for the selected time</li>
+            <li><strong>Play Full Sequence:</strong> Hear the entire storm evolution automatically (800ms per point)</li>
+          </ul>
+
+          <h1>Technical Details</h1>
+          <p><strong>Audio Engine:</strong> Tone.js (Web Audio API)</p>
+          <p><strong>Synthesis:</strong> Sawtooth (strings), Triangle (woodwinds), Square/Sawtooth (brass), Sine (position)</p>
+          <p><strong>Effects:</strong> Reverb, stereo panning, dynamic filtering</p>
+          <p><strong>Data Source:</strong> Hurricane Michael best track data (NOAA)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- wiki Popup -->
+    <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+      <div class="popup" id="wiki-popup" role="dialog" aria-labelledby="wiki-title" aria-modal="true" tabindex="-1">
+        <div class="popup-header">
+          <div class="popup-heading">
+            <img src="media/information.png" alt="" class="popup-icon" width="18" height="18" />
+            <h2 id="wiki-title" class="popup-title">Wiki Maps</h2>
+          </div>
+          <button class="close-popup" data-target="poi" aria-label="Close points of interest">
+            <img src="media/close.svg" alt="" width="18" height="18" />
+          </button>
+        </div>  
+
+
+        <div class="popup-content">
+          <div class="wiki-container">
+          <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
+          <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
+          <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
+          <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoom Buttons -->
+    <button class="taskbar-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">–</button>
+    <button class="taskbar-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
+  </div>
+</div>
+
+<!-- Glossary Popup -->
+<div class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
+  <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-title" aria-modal="true" tabindex="-1">
+    
+    <!-- Close button in top-right corner -->
+    <button class="close-popup glossary-close" data-target="glossary" aria-label="Close glossary">
+      <img src="media/close.svg" alt="" width="18" height="18" />
+
+    <!-- Sonification Info Modal -->
+    <div id="sonification-info-modal" class="about-popup" role="dialog" style="display: none;">
+      <div class="about-popup-content">
+        <button id="close-sonification-info" class="close-popup" aria-label="Close">
+          <img src="media/close.svg" alt="Close" width="18" height="18" />
+        </button>
+        <div class="about-inner">
+          <h2>Storm Sonification</h2>
+          <p><strong>Sonification</strong> uses sound to represent data.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map-wrapper">
+      <div id="map-container" tabindex="0" aria-label="Interactive map"></div>
+    </div>
 
     <!-- Storm Path Legend -->
     <div class="layer-popup" id="popup-path" tabindex="0" aria-label="Storm path legend panel">
@@ -368,32 +413,17 @@
           <img src="media/question.svg" alt="Legend info" width="14" height="14" style="filter: invert(1);" />
         </button>
       </h2>
-      <div >
-        <div class="legend-container">
-          <div class="legend-item"><span class="symbol circle" style="color: gray;">●</span><span>TS</span></div>
-          <div class="legend-item"><span class="symbol circle" style="color: white;">●</span><span>Cat 1</span></div>
-          <div class="legend-item"><span class="symbol circle" style="color: #FFFF00;">●</span><span>Cat 2</span></div>
-          <div class="legend-item"><span class="symbol triangle" style="color: #FFA500;">▲</span><span>Cat 3</span></div>
-          <div class="legend-item"><span class="symbol square" style="color: #FF0000;">■</span><span>Cat 4</span></div>
-          <div class="legend-item"><span class="symbol pentagon" style="color: #8B0000;">⬟</span><span>Cat 5</span></div>
-        </div>
+      <div class="legend-container">
+        <div class="legend-item"><span class="symbol circle" style="color: gray;">●</span><span>TS</span></div>
+        <div class="legend-item"><span class="symbol circle" style="color: white;">●</span><span>Cat 1</span></div>
+        <div class="legend-item"><span class="symbol circle" style="color: #FFFF00;">●</span><span>Cat 2</span></div>
+        <div class="legend-item"><span class="symbol triangle" style="color: #FFA500;">▲</span><span>Cat 3</span></div>
+        <div class="legend-item"><span class="symbol square" style="color: #FF0000;">■</span><span>Cat 4</span></div>
+        <div class="legend-item"><span class="symbol pentagon" style="color: #8B0000;">⬟</span><span>Cat 5</span></div>
       </div>
     </div>
 
-    <!-- Wiki Maps Popup 
-    <div class="layer-popup" id="popup-wiki" tabindex="0" aria-label="Wiki maps panel">
-      <h3>Wiki Maps</h3>
-      <div class="wiki-container">
-        <div class="wiki-item"><a class="wiki-link" href="wikimaps/USA.html" target="_blank">Base-map of United States</a></div>
-        <div class="wiki-item"><a class="wiki-link" href="wikimaps/se-usa.html" target="_blank">Base-map of Southeastern United States</a></div>
-        <div class="wiki-item"><a class="wiki-link" href="wikimaps/gulf-of-america.html" target="_blank">Base-map of Gulf of Mexico</a></div>
-        <div class="wiki-item"><a class="wiki-link" href="wikimaps/western-florida-coast.html" target="_blank">Base-map of Western Florida Coast</a></div>
-      </div>
-    </div>
-    -->
-
-    <!-- Removed unused Risk Zones popup -->
+    <script src="sonification.js"></script>
+    <script src="map.js" defer></script>
   </body>
-  <script src="sonification.js"></script>
-  <script src="map.js" defer></script>
 </html>
