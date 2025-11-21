@@ -136,7 +136,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const usa = await fetch("https://code.highcharts.com/mapdata/countries/us/us-all.topo.json").then(r => r.json());
 
   const timeDropdown = document.getElementById('time-dropdown');
-  const timeToggle = document.getElementById('time-toggle');
+  const timeDropdownItems = document.getElementById('time-dropdown-items');
+    const timeToggle = document.getElementById('time-toggle');
   let currentStartIndex = 0;
   
   
@@ -216,7 +217,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     });
 
-    timeDropdown.appendChild(item);
+    timeDropdownItems.appendChild(item);
   });
 
   
@@ -950,6 +951,52 @@ if (legendInfoButton) {
   });
 }
 
+const windbackInfoButton = document.getElementById('windback-info-button');
+if (windbackInfoButton) {
+  windbackInfoButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    // Remove any existing popup
+    const existingPopup = document.getElementById('windback-info-popup');
+    if (existingPopup) existingPopup.remove();
 
+    // Create info popup
+    const popup = document.createElement('div');
+    popup.id = 'windback-info-popup';
+    popup.textContent = 'This is a prototyping tool to simulate the hurricane as if it was real time.';
+    
+    // Apply same styling as layer-info-popup
+    Object.assign(popup.style, {
+      position: 'absolute',
+      background: 'rgba(35, 35, 35, 0.92)',
+      border: '1.5px solid rgba(255, 255, 255, 0.4)',
+      backdropFilter: 'blur(10px) brightness(1.05)',
+      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6), 0 0 8px rgba(255, 255, 255, 0.08)',
+      color: 'white',
+      padding: '10px 12px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      maxWidth: '240px',
+      lineHeight: '1.45',
+      zIndex: '10001',
+      transition: 'opacity 0.2s ease',
+      opacity: '0'
+    });
+
+    // Position near the button
+    const rect = windbackInfoButton.getBoundingClientRect();
+    popup.style.left = `${rect.right + 8}px`;
+    popup.style.top = `${rect.top - 4 + window.scrollY}px`;
+
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.style.opacity = '1');
+
+    // Auto-close after 5 seconds or on outside click
+    setTimeout(() => popup.remove(), 5000);
+    document.addEventListener('click', (ev) => {
+      if (!popup.contains(ev.target) && ev.target !== windbackInfoButton) popup.remove();
+    }, { once: true });
+  });
+}
 
 })();

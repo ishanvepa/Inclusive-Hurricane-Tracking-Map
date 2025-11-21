@@ -54,7 +54,7 @@ html, body {
 #button-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -62,7 +62,7 @@ html, body {
 .header-button {
   background: none;
   border: none;
-  padding: 6px;
+  padding: 2px;  /* Increased from 6px for more consistent spacing */
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -70,6 +70,8 @@ html, body {
   align-items: center;
   justify-content: center;
   position: relative;
+  width: 40px;   /* Fixed width for all buttons */
+  height: 40px;  /* Fixed height for all buttons */
 }
 
 .header-button:hover,
@@ -82,44 +84,34 @@ html, body {
   background-color: #0077cc;
 }
 
+/* Standardize ALL icon sizes */
 .header-button img {
   display: block;
-  width: auto;
-  height: 20px;
+  width: 20px !important;   /* Force consistent width */
+  height: 20px !important;  /* Force consistent height */
+  object-fit: contain;      /* Preserve aspect ratio */
 }
 
 #time-toggle img,
 #about-button img {
   filter: invert(1);
-  width: 16px;
-  height: 16px;
 }
 
 .zoom-button {
-  width: 30px;
-  height: auto;
+  width: 40px;   /* Match other buttons */
+  height: 40px;  /* Match other buttons */
   color: white;
   font-size: 20px;
   font-weight: bold;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Tooltip for header buttons */
-.header-button::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 10000;
+.zoom-button::after {
+  font-size: 12px !important;
+  font-weight: normal !important;
 }
 
 .header-button:hover::after,
@@ -127,52 +119,135 @@ html, body {
   opacity: 1;
 }
 
-/* Time dropdown */
-#time-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
+/* Hide tooltip when button is active (popup is open) */
+.header-button.active::after {
+  display: none !important;
 }
 
-.dropdown-menu {
-  display: none;
-  background-color: #222;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 0;
+#time-dropdown {
+  width: 280px !important;
+  padding: 1em !important;  /* Match other popups */
+  background: rgba(0, 0, 0, 0.85) !important;  /* Match other popups */
+  border: none;
+  border-radius: 20px !important;  /* Match other popups */
+}
+
+/* Time dropdown header - match .popup-header */
+.time-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;  /* Match other popups */
+}
+
+/* Time dropdown heading - match .popup-heading */
+.time-dropdown-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-dropdown-heading img {
+  width: 16px;
+  height: 16px;
+  filter: invert(1);
+  flex-shrink: 0;
+}
+
+.time-dropdown-heading h3 {
+  margin: 0;
+  font-size: 1.1rem;  /* Match .popup-title */
+  font-weight: 700;   /* Match .popup-title */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Info and close button container */
+.time-dropdown-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Time info button - match .info-button */
+.time-info-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.time-info-button:hover {
+  opacity: 1;
+}
+
+.time-info-button img {
+  filter: invert(1);
+  width: 14px;
+  height: 14px;
+}
+
+/* Close button - match .popup-header .close-popup */
+.time-dropdown-header .close-popup {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-dropdown-header .close-popup img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* Time dropdown items container */
+.time-dropdown-items {
   max-height: 200px;
   overflow-y: auto;
-  font-size: 14px;
-  z-index: 9999;
-  width: 220px;
+  margin-top: 0.75em;  /* Match .popup-content */
 }
 
-.dropdown-menu .dropdown-item {
+/* Adjust dropdown items */
+#time-dropdown .dropdown-item {
   padding: 6px 12px;
   cursor: pointer;
   font-size: 14px;
   border-bottom: 1px solid #333;
+  font-family: 'Inter', sans-serif;
 }
 
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:focus {
+#time-dropdown .dropdown-item:hover,
+#time-dropdown .dropdown-item:focus {
   background-color: #444;
   outline: none;
 }
 
-/* ====== Popup Wrappers - FIXED POSITIONING ====== */
+#time-dropdown .dropdown-item:last-child {
+  border-bottom: none;  /* Remove border from last item */
+}
+
+/* ====== Popup Wrappers  ====== */
 .button-popup-wrapper {
   position: fixed !important;
-  top: 100px !important;
+  top: 130px !important;  /* Changed from 100px - adds more space below toolbar */
   left: 20px !important;
-  z-index: 10000 !important;  /* Increased z-index */
+  z-index: 10000 !important;
 }
 
 /* ====== Popups ====== */
 .popup {
-  display: none;  /* Hidden by default */
+  display: none;  
   font-size: 0.95em;
   position: relative;
   background: rgba(0, 0, 0, 0.85);
@@ -462,6 +537,29 @@ html, body {
 #popup-path span.triangle,
 #popup-path span.pentagon {
   transform: scale(0.8);
+}
+
+#layer-info-popup {
+  position: absolute;
+  background: rgba(35, 35, 35, 0.92) !important;  /* Less transparent */
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;  /* Gray border back */
+  backdrop-filter: blur(10px) brightness(1.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6),
+              0 0 8px rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  max-width: 240px;
+  line-height: 1.45;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  z-index: 10001 !important;  /* Above the layers popup */
+}
+
+/* Position it ABOVE the button that triggered it */
+#layer-info-popup.show {
+  transform: scale(1.03);
+  opacity: 1;
 }
 
 /* ====== Info Buttons ====== */

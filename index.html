@@ -23,31 +23,37 @@
       <h1 id="storm-title">Hurricane Michael 2018</h1>
       
       <div id="button-row">
+        <!-- Time Toggle Button -->
         <button class="header-button" id="time-toggle" aria-label="Select forecast time" data-tooltip="Select forecast time">
           <img src="media/down2.svg" alt="Choose time" />
         </button>
         
+        <!-- About Button -->
         <button class="header-button" id="about-button" aria-label="About this page" data-tooltip="About this page">
           <img src="media/question.svg" alt="About" />
         </button>
-        <div id="about-dropdown" class="dropdown-menu" tabindex="0" aria-label="Select a forecast time"></div>
         
+        <!-- Layer Toggle Button -->
         <button class="header-button" id="layers-button" aria-label="Toggle map layers" data-tooltip="Toggle layers">
-          <img src="media/layers.png" alt="Layers" width="25" height="25" />
+          <img src="media/layers.png" alt="Layers" />
         </button>
-
+      
+        <!-- POI Button -->
         <button class="header-button" id="poi-button" aria-label="Open points of interest" data-tooltip="Add locations">
-          <img src="media/poi.png" alt="Points of Interest" width="20" height="24" />
+          <img src="media/poi.png" alt="Points of Interest" />
         </button>
         
+        <!-- Wiki Button -->
         <button class="header-button" id="wiki-button" aria-label="Open Wiki Maps" data-tooltip="Wiki Maps">
-          <img src="media/information.png" alt="wiki" width="25" height="25" />
+          <img src="media/information.png" alt="wiki" />
         </button>
-
+      
+        <!-- Sonification Button -->
         <button class="header-button" id="sonification-button" aria-label="Audio sonification" data-tooltip="Storm audio">
-          <img src="media/sonifylogo.png" alt="Sonification" width="20" height="23" style="filter: hue-rotate(120deg);" />
+          <img src="media/sonifylogo.png" alt="Sonification" style="filter: hue-rotate(120deg);" />
         </button>
-
+      
+        <!-- Zoom Buttons -->
         <button class="header-button zoom-button" id="zoom-out" aria-label="Zoom out" data-tooltip="Zoom Out">−</button>
         <button class="header-button zoom-button" id="zoom-in" aria-label="Zoom in" data-tooltip="Zoom In">+</button>
       </div>
@@ -57,12 +63,33 @@
 
     <!-- Time Dropdown Wrapper -->
     <div class="button-popup-wrapper" id="time-dropdown-wrapper">
-      <div id="time-dropdown" class="dropdown-menu popup" role="listbox" tabindex="0" aria-label="Select a forecast time">
-        <!-- Dropdown items will be added by JavaScript -->
+      <div id="time-dropdown" class="dropdown-menu popup" role="dialog" aria-labelledby="time-dropdown-title" tabindex="-1">
+        
+        <!-- Header matching other popups -->
+        <div class="time-dropdown-header">
+          <div class="time-dropdown-heading">
+            <img src="media/down2.svg" alt="" class="popup-icon">
+            <h3 id="time-dropdown-title">Windback Feature</h3>
+            <!-- Move info button here, next to title -->
+            <button class="time-info-button" id="windback-info-button" aria-label="About windback feature">
+              <img src="media/question.svg" alt="Help">
+            </button>
+          </div>
+          
+          <!-- Only close button on the right -->
+          <button class="close-popup" data-target="time-dropdown" aria-label="Close windback feature">
+            <img src="media/close.svg" alt="">
+          </button>
+        </div>
+        
+        <!-- Container for dropdown items (will be populated by JavaScript) -->
+        <div class="time-dropdown-items" id="time-dropdown-items">
+          <!-- Items added by map.js -->
+        </div>
+        
       </div>
     </div>
 
-    <!-- About Popup -->
     <!-- About Popup -->
 <div class="button-popup-wrapper" id="about-popup-wrapper">
   <div class="popup" id="about-popup" role="dialog" aria-labelledby="about-title" tabindex="-1">
