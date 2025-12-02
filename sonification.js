@@ -14,7 +14,8 @@ const sonificationState = {
   isPlaying: false,
   autoPlay: true,
   sequenceLoop: null,
-  currentIndex: 0
+  currentIndex: 0,
+  previousCategory: null // Track previous category for TTS
 };
 
 // --- Helper functions (converted from wind in knots to mph) ---
@@ -76,6 +77,39 @@ function pressureToBrightness(pressure) {
   const delta = Math.max(0, 1015 - p);
   const gain = Math.min(1, delta / 40);
   return gain;
+}
+
+// --- Text-to-speech for category changes ---
+function speakCategory(category) {
+  if ('speechSynthesis' in window) {
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance();
+    
+    // Construct the message based on category
+    let message = '';
+    if (category === 5) {
+      message = 'Category 5 Hurricane';
+    } else if (category === 4) {
+      message = 'Category 4 Hurricane';
+    } else if (category === 3) {
+      message = 'Category 3 Hurricane';
+    } else if (category === 2) {
+      message = 'Category 2 Hurricane';
+    } else if (category === 1) {
+      message = 'Category 1 Hurricane';
+    } else {
+      message = 'Tropical Storm';
+    }
+    
+    utterance.text = message;
+    utterance.rate = 2.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1;
+    
+    window.speechSynthesis.speak(utterance);
+  }
 }
 
 // --- Voice synthesis functions ---
@@ -201,6 +235,18 @@ async function performPoint(dataPoint, duration = 0.8) {
   panBus.pan.rampTo(pan, 0.08);
   mainHPF.frequency.rampTo(hpfFromLat(dataPoint.lat), 0.1);
 
+  // Check for category change and speak if needed
+  if (isFinite(dataPoint.vmax)) {
+    const currentCategory = deriveCategoryFromWind(dataPoint.vmax);
+    
+    if (sonificationState.previousCategory !== null && 
+        currentCategory !== sonificationState.previousCategory) {
+      speakCategory(currentCategory);
+    }
+    
+    sonificationState.previousCategory = currentCategory;
+  }
+
   // Play each voice if data is valid
   if (isFinite(dataPoint.mslp)) {
     playStrings(dataPoint.mslp, dur);
@@ -246,9 +292,14 @@ window.Sonification = {
   stop: function() {
     sonificationState.isPlaying = false;
     sonificationState.currentIndex = 0; // Reset to beginning
+    sonificationState.previousCategory = null; // Reset category tracking
     if (sonificationState.sequenceLoop) {
       clearTimeout(sonificationState.sequenceLoop);
       sonificationState.sequenceLoop = null;
+    }
+    // Also cancel any ongoing speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
   },
 
