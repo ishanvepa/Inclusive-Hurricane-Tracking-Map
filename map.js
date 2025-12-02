@@ -479,10 +479,48 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const playCurrentBtn = document.getElementById('play-current-point');
   const playSequenceBtn = document.getElementById('play-sequence');
   
+  // Sound layer toggle controls
+  const toggleStrings = document.getElementById('toggle-strings');
+  const toggleWoodwinds = document.getElementById('toggle-woodwinds');
+  const toggleBrass = document.getElementById('toggle-brass');
+  const toggleSpatial = document.getElementById('toggle-spatial');
+  const toggleTTS = document.getElementById('toggle-tts');
+  
   // Auto-play checkbox
   if (autoSonifyCheckbox) {
     autoSonifyCheckbox.addEventListener('change', function() {
       window.Sonification.setAutoPlay(this.checked);
+    });
+  }
+  
+  // Sound layer toggles
+  if (toggleStrings) {
+    toggleStrings.addEventListener('change', function() {
+      window.Sonification.setStringsEnabled(this.checked);
+    });
+  }
+  
+  if (toggleWoodwinds) {
+    toggleWoodwinds.addEventListener('change', function() {
+      window.Sonification.setWoodwindsEnabled(this.checked);
+    });
+  }
+  
+  if (toggleBrass) {
+    toggleBrass.addEventListener('change', function() {
+      window.Sonification.setBrassEnabled(this.checked);
+    });
+  }
+  
+  if (toggleSpatial) {
+    toggleSpatial.addEventListener('change', function() {
+      window.Sonification.setSpatialEnabled(this.checked);
+    });
+  }
+  
+  if (toggleTTS) {
+    toggleTTS.addEventListener('change', function() {
+      window.Sonification.setTTSEnabled(this.checked);
     });
   }
   

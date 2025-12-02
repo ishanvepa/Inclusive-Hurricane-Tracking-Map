@@ -15,7 +15,13 @@ const sonificationState = {
   autoPlay: true,
   sequenceLoop: null,
   currentIndex: 0,
-  previousCategory: null // Track previous category for TTS
+  previousCategory: null, // Track previous category for TTS
+  // Sound layer toggles
+  enableStrings: true,    // Pressure → Low drone
+  enableWoodwinds: true,  // Wind speed → Flute-like notes
+  enableBrass: true,      // Category → Warning motifs
+  enableSpatial: true,    // Position → Panning & filtering
+  enableTTS: true         // Text-to-speech category announcements
 };
 
 // --- Helper functions (converted from wind in knots to mph) ---
@@ -231,12 +237,20 @@ async function performPoint(dataPoint, duration = 0.8) {
   await Tone.start();
 
   const dur = duration;
-  const pan = panFromLon(dataPoint.lon);
-  panBus.pan.rampTo(pan, 0.08);
-  mainHPF.frequency.rampTo(hpfFromLat(dataPoint.lat), 0.1);
+  
+  // Apply spatial positioning if enabled
+  if (sonificationState.enableSpatial) {
+    const pan = panFromLon(dataPoint.lon);
+    panBus.pan.rampTo(pan, 0.08);
+    mainHPF.frequency.rampTo(hpfFromLat(dataPoint.lat), 0.1);
+  } else {
+    // Reset to center if spatial is disabled
+    panBus.pan.rampTo(0, 0.08);
+    mainHPF.frequency.rampTo(50, 0.1);
+  }
 
   // Check for category change and speak if needed
-  if (isFinite(dataPoint.vmax)) {
+  if (sonificationState.enableTTS && isFinite(dataPoint.vmax)) {
     const currentCategory = deriveCategoryFromWind(dataPoint.vmax);
     
     if (sonificationState.previousCategory !== null && 
@@ -247,13 +261,17 @@ async function performPoint(dataPoint, duration = 0.8) {
     sonificationState.previousCategory = currentCategory;
   }
 
-  // Play each voice if data is valid
-  if (isFinite(dataPoint.mslp)) {
+  // Play each voice if enabled and data is valid
+  if (sonificationState.enableStrings && isFinite(dataPoint.mslp)) {
     playStrings(dataPoint.mslp, dur);
   }
   if (isFinite(dataPoint.vmax)) {
-    playWoodwinds(dataPoint.vmax, dur);
-    playBrass(dataPoint.vmax, dur);
+    if (sonificationState.enableWoodwinds) {
+      playWoodwinds(dataPoint.vmax, dur);
+    }
+    if (sonificationState.enableBrass) {
+      playBrass(dataPoint.vmax, dur);
+    }
   }
 }
 
@@ -315,5 +333,40 @@ window.Sonification = {
   // Check if currently playing
   isPlaying: function() {
     return sonificationState.isPlaying;
+  },
+
+  // Toggle individual sound layers
+  setStringsEnabled: function(enabled) {
+    sonificationState.enableStrings = enabled;
+  },
+
+  setWoodwindsEnabled: function(enabled) {
+    sonificationState.enableWoodwinds = enabled;
+  },
+
+  setBrassEnabled: function(enabled) {
+    sonificationState.enableBrass = enabled;
+  },
+
+  setSpatialEnabled: function(enabled) {
+    sonificationState.enableSpatial = enabled;
+  },
+
+  setTTSEnabled: function(enabled) {
+    sonificationState.enableTTS = enabled;
+    if (!enabled && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  },
+
+  // Get current state of layers
+  getLayerStates: function() {
+    return {
+      strings: sonificationState.enableStrings,
+      woodwinds: sonificationState.enableWoodwinds,
+      brass: sonificationState.enableBrass,
+      spatial: sonificationState.enableSpatial,
+      tts: sonificationState.enableTTS
+    };
   }
 };
