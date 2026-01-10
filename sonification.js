@@ -253,7 +253,8 @@ async function performPoint(dataPoint, duration = 0.8) {
   if (sonificationState.enableTTS && isFinite(dataPoint.vmax)) {
     const currentCategory = deriveCategoryFromWind(dataPoint.vmax);
     
-    if (sonificationState.previousCategory !== null && 
+    // Speak on category change OR if this is the first point (previousCategory is null)
+    if (sonificationState.previousCategory === null || 
         currentCategory !== sonificationState.previousCategory) {
       speakCategory(currentCategory);
     }

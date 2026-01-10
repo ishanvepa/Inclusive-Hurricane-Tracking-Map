@@ -64,73 +64,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
 // Main initialization function
 (async () => {
-  let glossaryNotification = false;
-
-  // Glossary terms for contextual help
-  const glossaryTerms = {
-    cone: {
-      header: "Cone of Uncertainty",
-      terms: [
-        { term: "Definition", definition: "An area where the center of the storm may pass, indicating uncertainty in its forecasted track." },
-        { term: "Widening", definition: "The increasing uncertainty over time." }
-      ]
-    },
-    path: {
-      header: "Storm Path",
-      terms: [
-        { term: "Track", definition: "The predicted course of the hurricane." },
-        { term: "Intensity", definition: "Estimated strength along the track." }
-      ]
-    },
-    risk: {
-      header: "Risk Zones",
-      terms: [
-        { term: "High Risk", definition: "Locations with the highest threat from hurricane conditions." }
-      ]
-    },
-    wiki: {
-      header: "Wiki Maps",
-      terms: [
-        { term: "Additional Info", definition: "Extra details gathered from community resources." }
-      ]
-    }
-  };
-
-  // Inject glossary terms dynamically
-  function updateGlossary() {
-    const container = document.getElementById("glossary-content");
-    let html = "<h2></h2>";
-    let hasDefinitions = false;
-    const checkboxes = document.querySelectorAll('.layer-checkbox');
-  
-    checkboxes.forEach(cb => {
-      const layer = cb.dataset.layer;
-      if (cb.checked && glossaryTerms[layer]) {
-        const data = glossaryTerms[layer];
-        html += `<h3>${data.header}</h3><ul>`;
-        data.terms.forEach(item => {
-          html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
-        });
-        html += `</ul>`;
-        hasDefinitions = true;
-      }
-    });
-  
-    container.innerHTML = html;
-  
-    const glossaryPopup = document.getElementById("glossary-popup");
-    const notifBadge = document.getElementById("glossary-notification");
-
-    
-  
-    // Show red dot only if new layer was toggled AND glossary is closed
-    notifBadge.style.display = glossaryNotification && glossaryPopup.style.display !== "block"
-      ? "block"
-      : "none";
-  }
-  
-  
-
   // Load hurricane and basemap data
   const hurricane_path = await loadCSV("hurricane_michael_data.csv");
   const usa = await fetch("https://code.highcharts.com/mapdata/countries/us/us-all.topo.json").then(r => r.json());
@@ -342,7 +275,13 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         lon: userLocation.lon,
         custom: { id },
         marker: {
-          enabled: false // hide default marker
+          enabled: true,
+          radius: 0,  // Set radius to 0 to hide the default marker
+          states: {
+            hover: {
+              enabled: false  // Disable hover state
+            }
+          }
         },
         dataLabels: {
           enabled: true,
@@ -627,7 +566,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
   
       updatePopupPositions();
-      updateGlossary();
     });
   });
 
@@ -829,13 +767,12 @@ setTimeout(() => {
   if (subOption) subOption.style.display = 'block';
   if (legendPopup) legendPopup.style.display = 'block';
 
-  // Update glossary and popups
+  // Update popups
   updatePopupPositions();
-  updateGlossary();
   chart.redraw();
 }, 1000); // delay to ensure everything is initialized
 
-// --- Inline info buttons for layer definitions (replaces glossary button temporarily) ---
+// --- Inline info buttons for layer definitions ---
 document.querySelectorAll('.info-button').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
