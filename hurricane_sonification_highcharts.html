@@ -9,6 +9,7 @@
   <script src="https://code.highcharts.com/modules/sonification.js"></script>
   <script src="https://code.highcharts.com/modules/accessibility.js"></script>
   <script src="https://code.highcharts.com/modules/data.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
   <!-- Papa Parse (CSV convenience only; audio fully via Highcharts) -->
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
@@ -199,6 +200,21 @@
     Papa.parse(f, {header:true, dynamicTyping:true, skipEmptyLines:true, complete:onParsed});
   });
 
+  // Load hurricane_michael_data.csv by default on page load
+  function loadDefaultData(){
+    fetch('hurricane_michael_data.csv')
+      .then(function(response){ return response.text(); })
+      .then(function(csvText){
+        Papa.parse(csvText, {header:true, dynamicTyping:true, skipEmptyLines:true, complete:onParsed});
+      })
+      .catch(function(err){
+        console.error('Failed to load default CSV:', err);
+      });
+  }
+
+  // Load default data on page load
+  window.addEventListener('DOMContentLoaded', loadDefaultData);
+
   function onParsed(res){
     rows = res.data.map(function (o, i){
       var wind = mphFromWind(o);
@@ -276,25 +292,24 @@
       if (!ctx.point || !isFinite(ctx.point.y)) return null;
       var w = ctx.point.y; // mph
       if (pitchMapMode === 'semi') {
-        // Map to semitone steps roughly 220Hz base + up to ~2 octaves
-        var semis = clamp(Math.round((w / 160) * 24), 0, 24);
-        // Highcharts accepts note names OR Hz; give note name near A3..A5 :contentReference[oaicite:2]{index=2}
-        var noteNames = ['A3','A#3','B3','C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4','C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5','A5'];
+        // Map to semitone steps - very low range C2..C3
+        var semis = clamp(Math.round((w / 160) * 12), 0, 12);
+        var noteNames = ['C2','C#2','D2','D#2','E2','F2','F#2','G2','G#2','A2','A#2','B2','C3'];
         return noteNames[semis];
       }
-      // Linear Hz 100..900
-      return 100 + (clamp(w, 0, 160) / 160) * 800;
+      // Linear Hz 55..165 (very low, sub-bass to low bass)
+      return 55 + (clamp(w, 0, 160) / 160) * 110;
     }
     function windRate(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var w = clamp(ctx.point.y, 0, 160);
-      // More wind => faster note triggering (trill feel)
-      return 0.5 + (w / 160) * 3.0; // 0.5 .. 3.5 events per "window"
+      // Reduced rate variation for clarity
+      return 0.3 + (w / 160) * 1.0; // 0.3 .. 1.3 events per window
     }
     function windVol(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var w = clamp(ctx.point.y, 0, 160);
-      return 0.15 + (w/160) * 0.6;
+      return 0.08 + (w/160) * 0.35; // Reduced volume
     }
 
     // Strings (pressure) mapping
@@ -302,14 +317,14 @@
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var p = ctx.point.y; // mb
       var delta = Math.max(0, 1015 - p);
-      return clamp(0.15 + (delta / 60), 0, 1); // lower pressure → louder
+      return clamp(0.08 + (delta / 80), 0, 0.6); // Reduced volume
     }
     function pressPitch(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return null;
       var p = ctx.point.y;
-      // Invert: lower pressure → lower pitch (55..110 Hz)
+      // Invert: lower pressure → lower pitch (40..80 Hz - deep bass)
       var t = clamp((1020 - p) / 100, 0, 1);
-      return 110 - t*55;
+      return 80 - t*40;
     }
 
     // Pressure → Low-pass + threshold (simulated)
@@ -317,24 +332,24 @@
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var p = ctx.point.y; // mb
       var delta = Math.max(0, 1015 - p);
-      // Quiet bed that grows a bit as pressure drops (dark, LPF-like)
-      return clamp(0.08 + (delta / 120), 0, 0.5);
+      // Much quieter bed
+      return clamp(0.03 + (delta / 150), 0, 0.25);
     }
     function pressBrightVol(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var p = ctx.point.y;
       var th = parseFloat(elPressThresh && elPressThresh.value || '990');
-      // Opens only when pressure goes below threshold
-      var open = clamp((th - p) / 60, 0, 1); // 0 above threshold → 1 well below
-      return open; // acts like a brightness gate opening
+      // Opens only when pressure goes below threshold - reduced volume
+      var open = clamp((th - p) / 80, 0, 0.6);
+      return open;
     }
     function pressBrightPitch(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return null;
       var p = ctx.point.y;
       var th = parseFloat(elPressThresh && elPressThresh.value || '990');
-      // Slightly higher pitch the further below threshold we are (brighter impression)
+      // Very low pitch range
       var t = clamp((th - p) / 80, 0, 1);
-      return 260 + t * 180; // ~260..440 Hz
+      return 80 + t * 60; // ~80..140 Hz (low bass)
     }
 
     // Brass (category) mapping
@@ -348,7 +363,7 @@
         4: [0,2,5,7],
         5: [0,2,3,6,10]
       };
-      var baseHz = 220;
+      var baseHz = 65; // Very low base frequency (C2)
       var cat = clamp(Math.round(ctx.point.y), 0, 5);
       // Return base for first subnote; subsequence will be handled via noteDuration/rate trick
       return baseHz * Math.pow(2, motifs[cat][0]/12);
@@ -356,7 +371,7 @@
     function catVol(ctx){
       if (!ctx.point || !isFinite(ctx.point.y)) return 0;
       var c = clamp(Math.round(ctx.point.y), 0, 5);
-      return Math.min(1, 0.3 + (c * 0.14));
+      return Math.min(0.7, 0.15 + (c * 0.09)); // Reduced volume
     }
 
     function pan(ctx){
@@ -410,13 +425,13 @@
           sonification: {
             tracks: [{
               type: 'instrument',
-              instrument: 'flute',         // preset string or config object :contentReference[oaicite:7]{index=7}
+              instrument: 'sine',         // Changed to sine for smoother, mellower sound
               mapping: {
                 pitch: windPitch,          // function mapping supported
                 rate:  windRate,           // faster = more notes per window
                 volume: windVol,
                 pan:   pan,
-                noteDuration: { value: 90 } // short, trill-like
+                noteDuration: { value: 300 } // much longer for clarity
               }
             }]
           }
@@ -435,12 +450,12 @@
                 tracks: [
                   {
                     type: 'instrument',
-                    instrument: 'triangle',
+                    instrument: 'sine',
                     mapping: {
-                      pitch: { value: 180 },
+                      pitch: { value: 60 },  // Very low base pitch (sub-bass)
                       volume: pressBaseVol,
                       pan: pan,
-                      noteDuration: { value: 380 }
+                      noteDuration: { value: 500 }
                     }
                   },
                   {
@@ -450,7 +465,7 @@
                       pitch: pressBrightPitch,
                       volume: pressBrightVol,
                       pan: pan,
-                      noteDuration: { value: 240 }
+                      noteDuration: { value: 400 }
                     }
                   }
                 ]
@@ -462,10 +477,10 @@
                   type: 'instrument',
                   instrument: 'sawtooth',
                   mapping: {
-                    pitch: { value: 220 }, // constant pitch, let volume carry intensity
+                    pitch: { value: 110 }, // lowered constant pitch
                     volume: pressVol,
                     pan: pan,
-                    noteDuration: { value: 300 }
+                    noteDuration: { value: 400 }
                   }
                 }]
               };
@@ -477,9 +492,9 @@
                 instrument: 'sawtooth',
                 mapping: {
                   pitch: pressPitch,
-                  volume: { value: 0.4 },
+                  volume: { value: 0.25 }, // reduced volume
                   pan: pan,
-                  noteDuration: { value: 300 }
+                  noteDuration: { value: 400 }
                 }
               }]
             };
@@ -493,21 +508,44 @@
           data: catSeries,
           color: '#ff8a86',
           sonification: {
-            tracks: [{
-              type: 'instrument',
-              instrument: 'square',
-              mapping: {
-                pitch: catPitch,
-                volume: catVol,
-                pan: pan,
-                // break motif into quick sub-notes by higher rate at higher cat
-                rate: function(ctx){
-                  if (!ctx.point || !isFinite(ctx.point.y)) return 0;
-                  return 1 + (clamp(Math.round(ctx.point.y), 0, 5) * 0.8);
-                },
-                noteDuration: { value: 120 }
+            tracks: [
+              {
+                type: 'instrument',
+                instrument: 'square',
+                mapping: {
+                  pitch: catPitch,
+                  volume: catVol,
+                  pan: pan,
+                  // reduced rate variation for clarity
+                  rate: function(ctx){
+                    if (!ctx.point || !isFinite(ctx.point.y)) return 0;
+                    return 0.5 + (clamp(Math.round(ctx.point.y), 0, 5) * 0.3);
+                  },
+                  noteDuration: { value: 200 }
+                }
+              },
+              {
+                type: 'speech',
+                mapping: {
+                  text: function(ctx){
+                    if (!ctx.point || !isFinite(ctx.point.y)) return '';
+                    var cat = Math.round(ctx.point.y);
+                    var catNames = {
+                      0: 'Tropical Storm',
+                      1: 'Category 1',
+                      2: 'Category 2', 
+                      3: 'Category 3',
+                      4: 'Category 4',
+                      5: 'Category 5'
+                    };
+                    return catNames[cat] || 'Category ' + cat;
+                  },
+                  rate: { value: 2.0 },
+                  volume: { value: 0.8 },
+                  language: { value: 'en-US' }
+                }
               }
-            }]
+            ]
           }
         }
       ]

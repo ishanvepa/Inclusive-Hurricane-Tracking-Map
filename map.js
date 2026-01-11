@@ -283,7 +283,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
             }
           }
         },
-        dataLabels: {
+        dataLabels: { 
           enabled: true,
           useHTML: true,
           formatter: function () {
