@@ -59,6 +59,33 @@ const Explain = (() => {
   }
   
   /**
+   * Calculate distance between two lat/lon points in miles using Haversine formula
+   */
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 3958.8; // Earth's radius in miles
+    const toRad = deg => deg * Math.PI / 180;
+    
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+  
+  /**
+   * Get direction name from bearing
+   */
+  function getDirectionFromBearing(bearing) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(bearing / 22.5) % 16;
+    return directions[index];
+  }
+  
+  /**
    * Calculate bearing between two lat/lon points
    */
   function calculateBearing(lat1, lon1, lat2, lon2) {
@@ -95,7 +122,8 @@ const Explain = (() => {
     // Store data for regeneration
     window.lastExplainData = data;
     
-    const { current, previous, allPoints, currentIndex, stormName } = data;
+    const { current, previous, allPoints, currentIndex, stormName, userLocations } = data;
+    
     currentTimestamp = current.time;
     
     // Open modal
@@ -127,6 +155,22 @@ const Explain = (() => {
         derived.lifecycle_pct = currentIndex / (allPoints.length - 1);
       }
       
+      // Calculate distances and bearings to user locations
+      const poi_locations = [];
+      if (userLocations && userLocations.length > 0) {
+        userLocations.forEach(loc => {
+          const distance = calculateDistance(current.lat, current.lon, loc.lat, loc.lon);
+          const bearing = calculateBearing(current.lat, current.lon, loc.lat, loc.lon);
+          const direction = getDirectionFromBearing(bearing);
+          
+          poi_locations.push({
+            name: loc.name,
+            distance_miles: Math.round(distance),
+            direction: direction
+          });
+        });
+      }
+      
       // Check if we have uncertainty data (we don't by default)
       const has_uncertainty_data = false;
       
@@ -150,7 +194,8 @@ const Explain = (() => {
           category: previous.category
         } : null,
         derived,
-        has_uncertainty_data
+        has_uncertainty_data,
+        poi_locations: poi_locations
       };
       
       // Call API

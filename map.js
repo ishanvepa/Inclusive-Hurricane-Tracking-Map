@@ -136,12 +136,21 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       
       // Update explanation modal if the feature is available
       if (window.Explain) {
+        const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+        
+        const userLocations = userLocationsSeries ? userLocationsSeries.points.map(p => ({
+          name: p.name || 'Unknown Location',
+          lat: p.lat,
+          lon: p.lon
+        })) : [];
+        
         const explainData = {
           current: point,
           previous: i > 0 ? hurricane_path[i - 1] : null,
           allPoints: hurricane_path,
           currentIndex: i,
-          stormName: 'Hurricane Michael 2018'
+          stormName: 'Hurricane Michael 2018',
+          userLocations: userLocations
         };
         window.Explain.update(explainData);
       }
@@ -162,12 +171,20 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         
         // Update explanation modal if the feature is available
         if (window.Explain) {
+          const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+          const userLocations = userLocationsSeries ? userLocationsSeries.points.map(p => ({
+            name: p.name || 'Unknown Location',
+            lat: p.lat,
+            lon: p.lon
+          })) : [];
+          
           const explainData = {
             current: point,
             previous: i > 0 ? hurricane_path[i - 1] : null,
             allPoints: hurricane_path,
             currentIndex: i,
-            stormName: 'Hurricane Michael 2018'
+            stormName: 'Hurricane Michael 2018',
+            userLocations: userLocations
           };
           window.Explain.update(explainData);
         }

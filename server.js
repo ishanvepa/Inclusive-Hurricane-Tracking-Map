@@ -19,7 +19,7 @@ app.get('/api/health', (req, res) => {
 // Explanation endpoint
 app.post('/api/explain', async (req, res) => {
   try {
-    const { storm_name, current, previous, derived, has_uncertainty_data } = req.body;
+    const { storm_name, current, previous, derived, has_uncertainty_data, poi_locations } = req.body;
 
     // Validate required fields
     if (!storm_name || !current) {
@@ -32,23 +32,63 @@ app.post('/api/explain', async (req, res) => {
     }
 
     // Build the prompt for OpenAI
-    const systemPrompt = `You are a hurricane forecasting assistant. Generate explanations based ONLY on the provided storm data. Do not invent information.
+    const systemPrompt = `You are generating the content for a "What's happening?" modal in an inclusive hurricane tracking tool.
 
-Return valid JSON only with this exact structure:
+This modal is an INTERPRETIVE LAYER — not a forecast, warning, or technical report.
+Your goal is to help people understand what the storm data means for them right now,
+regardless of their background, education level, language familiarity, numeracy, or ability.
+
+CORE PRINCIPLES (must follow):
+- Extreme inclusivity: write so no one is left behind.
+- Accessibility, clarity, and relevance matter more than technical precision.
+- Do NOT assume prior knowledge of hurricanes, maps, bearings, or forecast models.
+- Do NOT invent impacts, risks, or safety claims not supported by the data.
+- Do NOT give prescriptive safety instructions (e.g., evacuate).
+
+WRITING GUIDELINES:
+- Target a 6th–8th grade reading level.
+- Use plain language first; explain technical terms briefly only if needed.
+- Prefer relative change ("weakening", "moving away") over raw numbers.
+- Use people-first, inclusive language (e.g., "people in this area…").
+- Acknowledge uncertainty and correct common misunderstandings.
+- Be calm, non-alarmist, and respectful of diverse lived experiences.
+
+LOCATION AWARENESS:
+${poi_locations && poi_locations.length > 0 ? `- User has marked specific locations — make these CENTRAL to your explanation.
+- Explain what the storm's distance and movement mean in everyday terms for EACH location.
+- Use qualitative distance language (e.g., "far", "closer", "moving away") alongside numbers.
+- Calculate whether the storm is moving TOWARD, AWAY FROM, or PARALLEL to each location.
+- Provide location-specific, actionable context in key_changes and what_to_watch.
+- Avoid implying that distance alone means safety.` : '- No specific locations marked by user. Focus on general storm behavior.'}
+
+UNCERTAINTY GUIDANCE:
+${has_uncertainty_data ? '- Use provided uncertainty metadata and explain what it means in plain language.' : '- Uncertainty cone data is not available. Explicitly state this and explain that storm impacts can occur beyond the center path.'}
+
+STRUCTURE REQUIREMENTS:
+Return ONLY valid JSON in the following structure:
+
 {
-  "headline": "string (max 10 words)",
-  "summary": "string (2-3 sentences)",
-  "key_changes": { "bullets": ["string", "string", "string"] },
-  "uncertainty": "string (1-2 sentences)",
-  "what_to_watch": ["string", "string"]
+  "headline": "Short, plain-language headline (max 10 words)",
+  "summary": "2–3 sentences explaining what changed, why it matters, and what it means for people near the selected location(s). Lead with relevance, not numbers.",
+  "key_changes": {
+    "bullets": [
+      "Plain-language description of the most important change.",
+      "Explanation of why that change matters (in everyday terms).",
+      "Location-aware interpretation (distance + movement, explained accessibly)."
+    ]
+  },
+  "uncertainty": "1–2 sentences explaining uncertainty in clear language, actively correcting misconceptions (e.g., storms can affect areas beyond the center path).",
+  "what_to_watch": [
+    "One inclusive, non-prescriptive thing people can monitor related to storm changes.",
+    "One location-aware thing to watch that respects different access, mobility, language, or alert preferences."
+  ]
 }
 
-Rules:
-- Base all content on provided data values only
-- Use delta values to describe changes (strengthening/weakening)
-- Mention bearing/direction if provided
-- For uncertainty: ${has_uncertainty_data ? 'Use provided uncertainty metadata' : 'State "Uncertainty cone data not available in this view; uncertainty generally increases further into the forecast."'}
-- Be concise and data-grounded`;
+CONTENT CONSTRAINTS:
+- Use ONLY the provided storm and location data.
+- Do NOT imply danger, safety, or impacts unless explicitly supported by the input data.
+- Do NOT reference internal calculations or technical processes.
+- Your output should help people feel informed, oriented, and capable of understanding what's happening — not overwhelmed or excluded.`;
 
     const userPrompt = `Storm: ${storm_name}
 Current point:
@@ -71,7 +111,23 @@ Changes from previous:
 
 ${derived?.lifecycle_pct !== undefined ? `Progress through storm lifecycle: ${(derived.lifecycle_pct * 100).toFixed(0)}%` : ''}
 
+${poi_locations && poi_locations.length > 0 ? `User-marked locations:
+${poi_locations.map(loc => `- ${loc.name}: ${loc.distance_miles} miles ${loc.direction}`).join('\n')}
+
+CRITICAL INSTRUCTIONS FOR USER LOCATIONS:
+1. Calculate whether the storm is moving TOWARD, AWAY FROM, or PARALLEL to each location based on the bearing
+2. Provide actionable guidance specific to each location (e.g., "Communities in [location] should prepare for...", "Those at [location] are currently in the path and should...", "[Location] is outside the immediate threat zone but should continue monitoring...")
+3. Use inclusive language that considers diverse needs and perspectives
+4. Be specific about what conditions each location might experience based on:
+   - Current distance from storm
+   - Storm's movement direction relative to the location
+   - Storm's intensity and trajectory
+5. In key_changes, include location-specific information
+6. In what_to_watch, provide location-tailored monitoring guidance` : ''}
+
 Generate the explanation.`;
+
+
 
     // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
