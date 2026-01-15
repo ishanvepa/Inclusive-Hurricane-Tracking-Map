@@ -224,6 +224,12 @@
       var lat = num(gKey(o,'lat') || gKey(o,'latitude'));
       var lon = num(gKey(o,'lon') || gKey(o,'longitude') || gKey(o,'lng'));
       var t   = gKey(o,'time') || gKey(o,'timestamp') || gKey(o,'date') || gKey(o,'ISO_time') || null;
+      
+      // Debug logging for first few rows
+      if (i < 10) {
+        console.log('Row ' + i + ':', 'wind(mph)=' + wind, 'category=' + category, 'type=' + gKey(o, 'type'));
+      }
+      
       return { i, t, lat, lon, wind, pressure, category };
     }).filter(function (r){ return isFinite(r.lat) && isFinite(r.lon); });
 
@@ -250,6 +256,8 @@
 
     // Precompute point arrays for three logical series (wind/pressure/category)
     var windSeries = [], pressSeries = [], catSeries = [];
+    var speechSeries = []; // Separate series for speech (only on category changes)
+    var lastCategory = null;
 
     rows.forEach(function(r, idx){
       // Common X: row index; keep lon/lat as props for mapping functions
@@ -271,9 +279,19 @@
 
       // Category (skip if null/NaN)
       if (r.category !== null && r.category !== undefined && isFinite(r.category)) {
-        catSeries.push(Object.assign({ y: r.category }, basePoint));
+        var currentCategory = Math.round(r.category);
+        catSeries.push(Object.assign({ y: currentCategory }, basePoint));
+        
+        // Speech series - only add point when category changes
+        if (lastCategory === null || currentCategory !== lastCategory) {
+          speechSeries.push(Object.assign({ y: currentCategory }, basePoint));
+          lastCategory = currentCategory;
+        } else {
+          speechSeries.push(null); // No speech at this point
+        }
       } else {
         catSeries.push(null);
+        speechSeries.push(null);
       }
     });
 
@@ -508,44 +526,64 @@
           data: catSeries,
           color: '#ff8a86',
           sonification: {
-            tracks: [
-              {
-                type: 'instrument',
-                instrument: 'square',
-                mapping: {
-                  pitch: catPitch,
-                  volume: catVol,
-                  pan: pan,
-                  // reduced rate variation for clarity
-                  rate: function(ctx){
-                    if (!ctx.point || !isFinite(ctx.point.y)) return 0;
-                    return 0.5 + (clamp(Math.round(ctx.point.y), 0, 5) * 0.3);
-                  },
-                  noteDuration: { value: 200 }
-                }
-              },
-              {
-                type: 'speech',
-                mapping: {
-                  text: function(ctx){
-                    if (!ctx.point || !isFinite(ctx.point.y)) return '';
-                    var cat = Math.round(ctx.point.y);
-                    var catNames = {
-                      0: 'Tropical Storm',
-                      1: 'Category 1',
-                      2: 'Category 2', 
-                      3: 'Category 3',
-                      4: 'Category 4',
-                      5: 'Category 5'
-                    };
-                    return catNames[cat] || 'Category ' + cat;
-                  },
-                  rate: { value: 2.0 },
-                  volume: { value: 0.8 },
-                  language: { value: 'en-US' }
-                }
+            tracks: [{
+              type: 'instrument',
+              instrument: 'square',
+              mapping: {
+                pitch: catPitch,
+                volume: catVol,
+                pan: pan,
+                // reduced rate variation for clarity
+                rate: function(ctx){
+                  if (!ctx.point || !isFinite(ctx.point.y)) return 0;
+                  return 0.5 + (clamp(Math.round(ctx.point.y), 0, 5) * 0.3);
+                },
+                noteDuration: { value: 200 }
               }
-            ]
+            }]
+          }
+        },
+
+        // --- Speech track (only announces category changes)
+        {
+          id: 'speech',
+          name: 'Category Speech',
+          type: 'line',
+          data: speechSeries,
+          // visible: false, // Hidden from chart display
+          color: 'transparent',
+          lineWidth: 0,
+          marker: { enabled: false },
+          showInLegend: false,
+          enableMouseTracking: false,
+          showInLegend: false,
+          enableMouseTracking: false,
+          sonification: {
+            enabled: true,
+            tracks: [{
+              type: 'speech',
+              mapping: {
+                time: 'x',
+                text: function(ctx){
+                  if (!ctx.point || !isFinite(ctx.point.y)) return '';
+                  var cat = Math.round(ctx.point.y);
+                  // Category -1 or less: Tropical Depression
+                  // Category 0: Tropical Storm
+                  // Category 1-5: Hurricane Category 1-5
+                  if (cat < 0) return 'Tropical Depression';
+                  if (cat === 0) return 'Tropical Storm';
+                  console.log(cat);
+                  if (cat >= 1 && cat <= 5) return 'Hurricane Category ' + cat;
+                  return 'Category ' + cat;
+                },
+                rate: { value: 2.0 },
+                volume: { value: 1.0 }
+              },
+              activeWhen: function(ctx) {
+                // Only speak when there's a valid point (not null)
+                return ctx.point && isFinite(ctx.point.y);
+              }
+            }]
           }
         }
       ]
