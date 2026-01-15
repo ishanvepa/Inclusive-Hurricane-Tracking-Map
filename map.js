@@ -133,6 +133,18 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       if (window.Sonification && window.Sonification.getAutoPlay()) {
         await window.Sonification.playPoint(point, 0.8);
       }
+      
+      // Update explanation modal if the feature is available
+      if (window.Explain) {
+        const explainData = {
+          current: point,
+          previous: i > 0 ? hurricane_path[i - 1] : null,
+          allPoints: hurricane_path,
+          currentIndex: i,
+          stormName: 'Hurricane Michael 2018'
+        };
+        window.Explain.update(explainData);
+      }
     });
 
     // Keyboard support for dropdown items
@@ -146,6 +158,18 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         // Auto-play sonification if enabled
         if (window.Sonification && window.Sonification.getAutoPlay()) {
           await window.Sonification.playPoint(point, 0.8);
+        }
+        
+        // Update explanation modal if the feature is available
+        if (window.Explain) {
+          const explainData = {
+            current: point,
+            previous: i > 0 ? hurricane_path[i - 1] : null,
+            allPoints: hurricane_path,
+            currentIndex: i,
+            stormName: 'Hurricane Michael 2018'
+          };
+          window.Explain.update(explainData);
         }
       }
     });
@@ -412,6 +436,53 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   setupToggle('wiki-button', 'wiki-popup');
   setupToggle('sonification-button', 'sonification-popup');
   console.log("=== setupToggle calls complete ===");
+  
+  // What's happening button - custom handler since it needs to check for data
+  const whatsHappeningButton = document.getElementById('whats-happening-button');
+  const explainPopup = document.getElementById('explain-popup');
+  
+  if (whatsHappeningButton && explainPopup) {
+    whatsHappeningButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = explainPopup.style.display === 'block';
+      
+      // Close ALL popups and dropdowns
+      document.querySelectorAll('.popup').forEach(p => {
+        p.style.display = 'none';
+      });
+      document.querySelectorAll('.dropdown-menu').forEach(d => {
+        d.style.display = 'none';
+      });
+      
+      // Remove active class from all header buttons
+      document.querySelectorAll('.header-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Toggle the explanation popup
+      if (!isVisible) {
+        explainPopup.style.display = 'block';
+        whatsHappeningButton.classList.add('active');
+        
+        // Update content via Explain module
+        if (window.Explain) {
+          window.Explain.toggle();
+        }
+      } else {
+        whatsHappeningButton.blur();
+      }
+    });
+    
+    // Close button handler for explain popup
+    const explainCloseBtn = explainPopup.querySelector('.close-popup');
+    if (explainCloseBtn) {
+      explainCloseBtn.addEventListener('click', () => {
+        explainPopup.style.display = 'none';
+        whatsHappeningButton.classList.remove('active');
+        whatsHappeningButton.blur();
+      });
+    }
+  }
   
   // Sonification controls
   const autoSonifyCheckbox = document.getElementById('auto-sonify');
