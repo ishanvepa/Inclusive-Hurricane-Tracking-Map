@@ -32,6 +32,10 @@ const Explain = (() => {
       return;
     }
     
+    // Set up accessibility attributes
+    modalContent.setAttribute('aria-live', 'polite');
+    modalContent.setAttribute('aria-atomic', 'true');
+    
     // Close button handler
     if (closeButton) {
       closeButton.addEventListener('click', close);
@@ -236,9 +240,10 @@ const Explain = (() => {
    * Show loading spinner
    */
   function showLoading() {
+    modalContent.setAttribute('aria-busy', 'true');
     modalContent.innerHTML = `
-      <div class="explain-loading">
-        <div class="spinner"></div>
+      <div class="explain-loading" role="status" aria-live="polite" aria-label="Generating explanation">
+        <div class="spinner" aria-hidden="true"></div>
         <p>Generating explanation…</p>
       </div>
     `;
@@ -252,6 +257,8 @@ const Explain = (() => {
    * Render the explanation in the modal
    */
   function renderExplanation(explanation) {
+    modalContent.setAttribute('aria-busy', 'false');
+    
     // Escape HTML to prevent XSS
     const escapeHtml = (text) => {
       const div = document.createElement('div');
@@ -303,8 +310,9 @@ const Explain = (() => {
    * Show error message
    */
   function showError(message) {
+    modalContent.setAttribute('aria-busy', 'false');
     modalContent.innerHTML = `
-      <div class="explain-error">
+      <div class="explain-error" role="alert" aria-live="assertive">
         <p><strong>Error:</strong> ${message}</p>
         <button id="explain-retry" class="explain-retry-button">Retry</button>
       </div>
@@ -366,8 +374,9 @@ const Explain = (() => {
    * Show placeholder message when no timestamp is selected
    */
   function showPlaceholder() {
+    modalContent.setAttribute('aria-busy', 'false');
     modalContent.innerHTML = `
-      <div class="explain-placeholder">
+      <div class="explain-placeholder" role="status" aria-live="polite">
         <p><strong>No timestamp selected</strong></p>
         <p>Please select a timestamp from the <strong>Windback Feature</strong> to see an AI-generated explanation of what's happening at that moment in the storm.</p>
         <p style="margin-top: 16px; font-size: 13px; color: rgba(255, 255, 255, 0.7);">💡 Tip: Click the down arrow (▼) button to open the windback feature and choose a time point.</p>

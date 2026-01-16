@@ -120,9 +120,14 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     item.dataset.index = i;
 
     const date = new Date(point.time);
-    item.textContent = date.toLocaleString('en-US', {
+    const dateString = date.toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'
     });
+    item.textContent = dateString;
+    
+    // Add descriptive aria-label for screen readers
+    const categoryLabel = point.category === 0 ? 'Tropical Storm' : `Category ${point.category}`;
+    item.setAttribute('aria-label', `Select time ${dateString}, ${categoryLabel}, winds ${point.vmax} knots`);
 
     item.addEventListener('click', async () => {
       currentStartIndex = i;
