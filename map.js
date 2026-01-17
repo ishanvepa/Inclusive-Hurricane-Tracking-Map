@@ -590,19 +590,19 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const closeInfoBtn = document.getElementById('close-sonification-info');
 
   if (infoButton && infoModal && closeInfoBtn) {
-    // Open modal when help button is clicked
-    infoButton.addEventListener('click', () => {
+    infoButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    
       infoModal.style.display = 'block';
-      closeInfoBtn.focus(); // Focus close button for accessibility
     });
+    
 
-    // Close modal when X button is clicked
     closeInfoBtn.addEventListener('click', () => {
       infoModal.style.display = 'none';
-      infoButton.focus(); // Return focus to help button
+      infoButton.focus();
     });
 
-    // Close modal when clicking outside the content
     infoModal.addEventListener('click', (e) => {
       if (e.target === infoModal) {
         infoModal.style.display = 'none';
@@ -610,7 +610,11 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     });
 
-    // Close modal with Escape key
+    document.addEventListener('click', () => {
+      console.log('DOCUMENT CLICK');
+    });
+    
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && infoModal.style.display === 'block') {
         infoModal.style.display = 'none';
@@ -618,6 +622,9 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     });
   }
+
+
+  
   
   
 
