@@ -498,6 +498,74 @@ html, body {
   width: auto !important;
 }
 
+/* Sonification info modal - same styling as about popup */
+#sonification-info-modal {
+  width: 500px !important;
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Position sonification info modal in the center of the screen */
+#sonification-info-modal-wrapper {
+  left: 50% !important;
+  transform: translateX(-50%);
+  width: auto !important;
+}
+
+#sonification-info-modal .popup-content {
+  padding-right: 8px;
+}
+
+#sonification-info-modal .popup-content h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  color: #90cdf4;
+}
+
+#sonification-info-modal .popup-content h3:first-child {
+  margin-top: 0;
+}
+
+#sonification-info-modal .popup-content p {
+  margin-bottom: 0.8em;
+  line-height: 1.5;
+}
+
+#sonification-info-modal .popup-content ul {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+#sonification-info-modal .popup-content li {
+  margin-bottom: 0.4em;
+}
+
+#sonification-info-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+#sonification-info-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
 /* ====== Layer Legend Popup ====== */
 .layer-popup {
   display: none;

@@ -589,12 +589,20 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const infoModal = document.getElementById('sonification-info-modal');
   const closeInfoBtn = document.getElementById('close-sonification-info');
 
+  console.log('=== SONIFICATION INFO BUTTON DEBUG ===');
+  console.log('infoButton:', infoButton);
+  console.log('infoModal:', infoModal);
+  console.log('closeInfoBtn:', closeInfoBtn);
+
   if (infoButton && infoModal && closeInfoBtn) {
+    console.log('All elements found, adding event listener');
     infoButton.addEventListener('click', (e) => {
+      console.log('INFO BUTTON CLICKED!');
       e.stopPropagation();
       e.preventDefault();
     
       infoModal.style.display = 'block';
+      console.log('Modal display set to block');
     });
     
 
@@ -603,15 +611,14 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       infoButton.focus();
     });
 
-    infoModal.addEventListener('click', (e) => {
-      if (e.target === infoModal) {
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+      if (infoModal.style.display === 'block' && 
+          !infoModal.contains(e.target) && 
+          e.target !== infoButton &&
+          !infoButton.contains(e.target)) {
         infoModal.style.display = 'none';
-        infoButton.focus();
       }
-    });
-
-    document.addEventListener('click', () => {
-      console.log('DOCUMENT CLICK');
     });
     
 
