@@ -1,3 +1,13 @@
+console.log("=== DEBUGGING BUTTON SETUP ===");
+console.log("Layers button:", document.getElementById('layers-button'));
+console.log("Layers popup:", document.getElementById('layers-popup'));
+console.log("POI button:", document.getElementById('poi-button'));
+console.log("POI popup:", document.getElementById('poi-popup'));
+console.log("Wiki button:", document.getElementById('wiki-button'));
+console.log("Wiki popup:", document.getElementById('wiki-popup'));
+console.log("Sonification button:", document.getElementById('sonification-button'));
+console.log("Sonification popup:", document.getElementById('sonification-popup'));
+
 // Load and parse hurricane CSV data
 async function loadCSV(path) {
   const response = await fetch(path);
@@ -54,84 +64,15 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
 
 // Main initialization function
 (async () => {
-  let glossaryNotification = false;
-
-  // Glossary terms for contextual help
-  const glossaryTerms = {
-    cone: {
-      header: "Cone of Uncertainty",
-      terms: [
-        { term: "Definition", definition: "An area where the center of the storm may pass, indicating uncertainty in its forecasted track." },
-        { term: "Widening", definition: "The increasing uncertainty over time." }
-      ]
-    },
-    path: {
-      header: "Storm Path",
-      terms: [
-        { term: "Track", definition: "The predicted course of the hurricane." },
-        { term: "Intensity", definition: "Estimated strength along the track." }
-      ]
-    },
-    risk: {
-      header: "Risk Zones",
-      terms: [
-        { term: "High Risk", definition: "Locations with the highest threat from hurricane conditions." }
-      ]
-    },
-    wiki: {
-      header: "Wiki Maps",
-      terms: [
-        { term: "Additional Info", definition: "Extra details gathered from community resources." }
-      ]
-    }
-  };
-
-  // Inject glossary terms dynamically
-  function updateGlossary() {
-    const container = document.getElementById("glossary-content");
-    let html = "<h2></h2>";
-    let hasDefinitions = false;
-    const checkboxes = document.querySelectorAll('.layer-checkbox');
-  
-    checkboxes.forEach(cb => {
-      const layer = cb.dataset.layer;
-      if (cb.checked && glossaryTerms[layer]) {
-        const data = glossaryTerms[layer];
-        html += `<h3>${data.header}</h3><ul>`;
-        data.terms.forEach(item => {
-          html += `<li><strong>${item.term}:</strong> ${item.definition}</li>`;
-        });
-        html += `</ul>`;
-        hasDefinitions = true;
-      }
-    });
-  
-    container.innerHTML = html;
-  
-    const glossaryPopup = document.getElementById("glossary-popup");
-    const notifBadge = document.getElementById("glossary-notification");
-
-    
-  
-    // Show red dot only if new layer was toggled AND glossary is closed
-    notifBadge.style.display = glossaryNotification && glossaryPopup.style.display !== "block"
-      ? "block"
-      : "none";
-  }
-  
-  
-
   // Load hurricane and basemap data
   const hurricane_path = await loadCSV("hurricane_michael_data.csv");
   const usa = await fetch("https://code.highcharts.com/mapdata/countries/us/us-all.topo.json").then(r => r.json());
 
   const timeDropdown = document.getElementById('time-dropdown');
-  const timeToggle = document.getElementById('time-toggle');
+  const timeDropdownItems = document.getElementById('time-dropdown-items');
+    const timeToggle = document.getElementById('time-toggle');
   let currentStartIndex = 0;
   
-  timeToggle.addEventListener('click', () => {
-    timeDropdown.style.display = timeDropdown.style.display === 'block' ? 'none' : 'block';
-  });
   
   function updateHurricaneSeries() {
     const path = chart.series.find(s => s.name === "Hurricane Path");
@@ -179,17 +120,83 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     item.dataset.index = i;
 
     const date = new Date(point.time);
-    item.textContent = date.toLocaleString('en-US', {
+    const dateString = date.toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'
     });
+    item.textContent = dateString;
+    
+    // Add descriptive aria-label for screen readers
+    const categoryLabel = point.category === 0 ? 'Tropical Storm' : `Category ${point.category}`;
+    item.setAttribute('aria-label', `Select time ${dateString}, ${categoryLabel}, winds ${point.vmax} knots`);
 
-    item.addEventListener('click', () => {
+    item.addEventListener('click', async () => {
       currentStartIndex = i;
       updateHurricaneSeries();
       timeDropdown.style.display = 'none';
+      
+      // Auto-play sonification if enabled
+      if (window.Sonification && window.Sonification.getAutoPlay()) {
+        await window.Sonification.playPoint(point, 0.8);
+      }
+      
+      // Update explanation modal if the feature is available
+      if (window.Explain) {
+        const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+        
+        const userLocations = userLocationsSeries ? userLocationsSeries.points.map(p => ({
+          name: p.name || 'Unknown Location',
+          lat: p.lat,
+          lon: p.lon
+        })) : [];
+        
+        const explainData = {
+          current: point,
+          previous: i > 0 ? hurricane_path[i - 1] : null,
+          allPoints: hurricane_path,
+          currentIndex: i,
+          stormName: 'Hurricane Michael 2018',
+          userLocations: userLocations
+        };
+        window.Explain.update(explainData);
+      }
     });
 
-    timeDropdown.appendChild(item);
+    // Keyboard support for dropdown items
+    item.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        currentStartIndex = i;
+        updateHurricaneSeries();
+        timeDropdown.style.display = 'none';
+        
+        // Auto-play sonification if enabled
+        if (window.Sonification && window.Sonification.getAutoPlay()) {
+          await window.Sonification.playPoint(point, 0.8);
+        }
+        
+        // Update explanation modal if the feature is available
+        if (window.Explain) {
+          const userLocationsSeries = chart.series.find(s => s.name === "User Locations");
+          const userLocations = userLocationsSeries ? userLocationsSeries.points.map(p => ({
+            name: p.name || 'Unknown Location',
+            lat: p.lat,
+            lon: p.lon
+          })) : [];
+          
+          const explainData = {
+            current: point,
+            previous: i > 0 ? hurricane_path[i - 1] : null,
+            allPoints: hurricane_path,
+            currentIndex: i,
+            stormName: 'Hurricane Michael 2018',
+            userLocations: userLocations
+          };
+          window.Explain.update(explainData);
+        }
+      }
+    });
+
+    timeDropdownItems.appendChild(item);
   });
 
   
@@ -291,13 +298,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     color: "#cc0000", opacity: 0.5, legendSymbolColor: "#d22", data: coneGeo.features.map(f => ({ geometry: f.geometry, properties: f.properties })),
     mapData: coneGeo, zIndex: 0, joinBy: null });
 
-  // Hide all layers by default
-  ["Hurricane Path", "Hurricane Path Markers", "Cone of Uncertainty"].forEach(name => {
-    const series = chart.series.find(s => s.name === name);
-    if (series) series.setVisible(false, false);
-  });
-  chart.redraw();
-
+ 
   // Setup interaction handlers
   document.getElementById("current-location").addEventListener("click", async () => {
     const userLocation = await new Promise(resolve => {
@@ -320,9 +321,15 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         lon: userLocation.lon,
         custom: { id },
         marker: {
-          enabled: false // hide default marker
+          enabled: true,
+          radius: 0,  // Set radius to 0 to hide the default marker
+          states: {
+            hover: {
+              enabled: false  // Disable hover state
+            }
+          }
         },
-        dataLabels: {
+        dataLabels: { 
           enabled: true,
           useHTML: true,
           formatter: function () {
@@ -371,67 +378,259 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   }
   window.addEventListener('resize', () => {
     resizeChart();
-    positionTaskbarBelowTitle();
   });
 
-  // Adjust taskbar based on chart title position
-  function positionTaskbarBelowTitle() {
-    const chartContainer = document.getElementById('map-container');
-    const taskbar = document.getElementById('taskbar');
-    const title = chartContainer.querySelector('.highcharts-title');
-    if (title && taskbar) {
-      const titleBBox = title.getBBox();
-      taskbar.style.top = `${titleBBox.y + titleBBox.height + 20}px`;
-    }
-  }
-  positionTaskbarBelowTitle();
 
   // Button popup toggle
   function setupToggle(buttonId, popupId) {
     const button = document.getElementById(buttonId);
     const popup = document.getElementById(popupId);
+    
+    console.log(`Setting up ${buttonId} -> ${popupId}`);
+    console.log(`  Button found:`, button);
+    console.log(`  Popup found:`, popup);
+    
+    if (!button) {
+      console.error(`Button not found: ${buttonId}`);
+      return;
+    }
+    
+    if (!popup) {
+      console.error(`Popup not found: ${popupId}`);
+      return;
+    }
+    
     const closeBtn = popup.querySelector('.close-popup');
+    
+    if (!closeBtn) {
+      console.warn(`Close button not found in popup: ${popupId} (might be a dropdown)`);
+    }
   
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
+      console.log(`Button clicked: ${buttonId}`);
       const isVisible = popup.style.display === 'block';
   
-      // Close all other popups and remove active classes
+      // Close ALL popups and dropdowns
       document.querySelectorAll('.popup').forEach(p => {
-        if (p.id !== 'glossary-popup') {
-          p.style.display = 'none';
-        }
+        p.style.display = 'none';
       });
-      document.querySelectorAll('.taskbar-button').forEach(btn => {
+      document.querySelectorAll('.dropdown-menu').forEach(d => {
+        d.style.display = 'none';
+      });
+      
+      // Remove active class from all header buttons
+      document.querySelectorAll('.header-button').forEach(btn => {
         btn.classList.remove('active');
       });
   
-      if (buttonId === "glossary-button") {
-        document.getElementById("glossary-notification").style.display = "none";
-        glossaryNotification = false;
-      }
-  
+      // Toggle the clicked popup/dropdown
       if (isVisible) {
         popup.style.display = 'none';
         button.classList.remove('active');
-        button.blur(); // ← removes focus so gray background goes away
+        button.blur();
+        console.log(`  Closed ${popupId}`);
       } else {
         popup.style.display = 'block';
         button.classList.add('active');
+        console.log(`  Opened ${popupId}`);
       }
     });
   
-    closeBtn.addEventListener('click', () => {
-      popup.style.display = 'none';
-      button.classList.remove('active');
-      button.blur(); // ← same here, to remove highlight if 'X' was last clicked
+    // Add close button handler if it exists
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        console.log(`Close button clicked for ${popupId}`);
+        popup.style.display = 'none';
+        button.classList.remove('active');
+        button.blur();
+      });
+    }
+    
+    console.log(`  Setup complete for ${buttonId}`);
+  }
+  
+  console.log("=== CALLING setupToggle ===");
+  setupToggle('time-toggle', 'time-dropdown');      // Add this line
+  setupToggle('about-button', 'about-popup');       // Add this line
+  setupToggle('layers-button', 'layers-popup');
+  setupToggle('poi-button', 'poi-popup');
+  setupToggle('wiki-button', 'wiki-popup');
+  setupToggle('sonification-button', 'sonification-popup');
+  console.log("=== setupToggle calls complete ===");
+  
+  // What's happening button - custom handler since it needs to check for data
+  const whatsHappeningButton = document.getElementById('whats-happening-button');
+  const explainPopup = document.getElementById('explain-popup');
+  
+  if (whatsHappeningButton && explainPopup) {
+    whatsHappeningButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = explainPopup.style.display === 'block';
+      
+      // Close ALL popups and dropdowns
+      document.querySelectorAll('.popup').forEach(p => {
+        p.style.display = 'none';
+      });
+      document.querySelectorAll('.dropdown-menu').forEach(d => {
+        d.style.display = 'none';
+      });
+      
+      // Remove active class from all header buttons
+      document.querySelectorAll('.header-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Toggle the explanation popup
+      if (!isVisible) {
+        explainPopup.style.display = 'block';
+        whatsHappeningButton.classList.add('active');
+        
+        // Update content via Explain module
+        if (window.Explain) {
+          window.Explain.toggle();
+        }
+      } else {
+        whatsHappeningButton.blur();
+      }
+    });
+    
+    // Close button handler for explain popup
+    const explainCloseBtn = explainPopup.querySelector('.close-popup');
+    if (explainCloseBtn) {
+      explainCloseBtn.addEventListener('click', () => {
+        explainPopup.style.display = 'none';
+        whatsHappeningButton.classList.remove('active');
+        whatsHappeningButton.blur();
+      });
+    }
+  }
+  
+  // Sonification controls
+  const autoSonifyCheckbox = document.getElementById('auto-sonify');
+  const playCurrentBtn = document.getElementById('play-current-point');
+  const playSequenceBtn = document.getElementById('play-sequence');
+  
+  // Sound layer toggle controls
+  const toggleStrings = document.getElementById('toggle-strings');
+  const toggleWoodwinds = document.getElementById('toggle-woodwinds');
+  const toggleBrass = document.getElementById('toggle-brass');
+  const toggleSpatial = document.getElementById('toggle-spatial');
+  const toggleTTS = document.getElementById('toggle-tts');
+  
+  // Auto-play checkbox
+  if (autoSonifyCheckbox) {
+    autoSonifyCheckbox.addEventListener('change', function() {
+      window.Sonification.setAutoPlay(this.checked);
     });
   }
   
+  // Sound layer toggles
+  if (toggleStrings) {
+    toggleStrings.addEventListener('change', function() {
+      window.Sonification.setStringsEnabled(this.checked);
+    });
+  }
   
-  setupToggle('glossary-button', 'glossary-popup');
-  setupToggle('poi-button', 'poi-popup');
-  setupToggle('layers-button', 'layers-popup');
-  setupToggle('wiki-button', 'wiki-popup');
+  if (toggleWoodwinds) {
+    toggleWoodwinds.addEventListener('change', function() {
+      window.Sonification.setWoodwindsEnabled(this.checked);
+    });
+  }
+  
+  if (toggleBrass) {
+    toggleBrass.addEventListener('change', function() {
+      window.Sonification.setBrassEnabled(this.checked);
+    });
+  }
+  
+  if (toggleSpatial) {
+    toggleSpatial.addEventListener('change', function() {
+      window.Sonification.setSpatialEnabled(this.checked);
+    });
+  }
+  
+  if (toggleTTS) {
+    toggleTTS.addEventListener('change', function() {
+      window.Sonification.setTTSEnabled(this.checked);
+    });
+  }
+  
+  // Play current point
+  if (playCurrentBtn) {
+    playCurrentBtn.addEventListener('click', async function() {
+      if (currentStartIndex >= 0 && currentStartIndex < hurricane_path.length) {
+        const point = hurricane_path[currentStartIndex];
+        await window.Sonification.playPoint(point, 0.8);
+      }
+    });
+  }
+  
+  // Play full sequence
+  if (playSequenceBtn) {
+    playSequenceBtn.addEventListener('click', async function() {
+      if (window.Sonification.isPlaying()) {
+        // Stop the sequence
+        window.Sonification.stop();
+        this.textContent = '▶ Play Full Sequence';
+      } else {
+        // Start the sequence
+        this.textContent = '⏹ Stop Sequence';
+        await window.Sonification.playSequence(hurricane_path, 800, () => {
+          // Callback when sequence completes
+          playSequenceBtn.textContent = '▶ Play Full Sequence';
+        });
+      }
+    });
+  }
+
+  // Sonification info modal handlers
+  const infoButton = document.getElementById('sonification-info-button');
+  const infoModal = document.getElementById('sonification-info-modal');
+  const closeInfoBtn = document.getElementById('close-sonification-info');
+
+  console.log('=== SONIFICATION INFO BUTTON DEBUG ===');
+  console.log('infoButton:', infoButton);
+  console.log('infoModal:', infoModal);
+  console.log('closeInfoBtn:', closeInfoBtn);
+
+  if (infoButton && infoModal && closeInfoBtn) {
+    console.log('All elements found, adding event listener');
+    infoButton.addEventListener('click', (e) => {
+      console.log('INFO BUTTON CLICKED!');
+      e.stopPropagation();
+      e.preventDefault();
+    
+      infoModal.style.display = 'block';
+      console.log('Modal display set to block');
+    });
+    
+
+    closeInfoBtn.addEventListener('click', () => {
+      infoModal.style.display = 'none';
+      infoButton.focus();
+    });
+
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+      if (infoModal.style.display === 'block' && 
+          !infoModal.contains(e.target) && 
+          e.target !== infoButton &&
+          !infoButton.contains(e.target)) {
+        infoModal.style.display = 'none';
+      }
+    });
+    
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && infoModal.style.display === 'block') {
+        infoModal.style.display = 'none';
+        infoButton.focus();
+      }
+    });
+  }
+
+
   
   
   
@@ -474,7 +673,6 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
   
       updatePopupPositions();
-      updateGlossary();
     });
   });
 
@@ -641,19 +839,246 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   // Optional: focus map container for keyboard navigation
   document.getElementById('map-container').focus();
 
-  document.getElementById("about-button").addEventListener("click", () => {
-    const popup = document.getElementById("about-popup");
-    popup.style.display = "block";
-    popup.focus();
-  });
-  
-  document.querySelector("#about-popup .close-popup").addEventListener("click", () => {
-    document.getElementById("about-popup").style.display = "none";
-  });
 
 
   // Zoom controls
   document.getElementById('zoom-in').addEventListener('click', () => chart.mapView.zoomBy(1));
   document.getElementById('zoom-out').addEventListener('click', () => chart.mapView.zoomBy(-1));
+
+  // === AUTO-ENABLE CONE + PATH (with markers) AFTER INITIALIZATION ===
+setTimeout(() => {
+  const coneCheckbox = document.querySelector('.layer-checkbox[data-layer="cone"]');
+  const pathCheckbox = document.querySelector('.layer-checkbox[data-layer="path"]');
+
+  // Make sure both checkboxes exist first
+  if (!coneCheckbox || !pathCheckbox) return;
+
+  // Check them visually
+  coneCheckbox.checked = true;
+  pathCheckbox.checked = true;
+
+  // Manually make series visible (avoiding race conditions)
+  const coneSeries = chart.series.find(s => s.name === "Cone of Uncertainty");
+  const pathSeries = chart.series.find(s => s.name === "Hurricane Path");
+  const markersSeries = chart.series.find(s => s.name === "Hurricane Path Markers");
+
+  if (coneSeries) coneSeries.setVisible(true, false);
+  if (pathSeries) pathSeries.setVisible(true, false);
+  if (markersSeries) markersSeries.setVisible(true, false);
+
+  // Show legend and sub-option for path
+  const legendCheckbox = document.querySelector('.legend-subcheckbox[data-target="path"]');
+  const subOption = document.querySelector('.legend-suboption[data-parent="path"]');
+  const legendPopup = document.getElementById('popup-path');
+  if (legendCheckbox) legendCheckbox.checked = true;
+  if (subOption) subOption.style.display = 'block';
+  if (legendPopup) legendPopup.style.display = 'block';
+
+  // Update popups
+  updatePopupPositions();
+  chart.redraw();
+}, 1000); // delay to ensure everything is initialized
+
+// --- Inline info buttons for layer definitions ---
+document.querySelectorAll('.info-button').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const layer = btn.dataset.info;
+
+    let message = '';
+    if (layer === 'cone') {
+      message = "The Cone of Uncertainty shows where the center of the storm is most likely to travel. Impacts like wind, rain, and flooding can happen far outside the cone.";
+    } else if (layer === 'path') {
+      message = "The Storm Path represents the observed and forecasted movement of the hurricane, with markers showing its changing intensity.";
+    }
+
+    // Simple popup near the button
+    const existingPopup = document.getElementById('layer-info-popup');
+    if (existingPopup) existingPopup.remove();
+
+    const popup = document.createElement('div');
+    popup.id = 'layer-info-popup';
+    popup.textContent = message;
+    popup.style.position = 'absolute';
+    popup.style.background = '#1b1b1b';
+    popup.style.color = 'white';
+    popup.style.padding = '10px 12px';
+    popup.style.borderRadius = '8px';
+    popup.style.fontSize = '13px';
+    popup.style.maxWidth = '220px';
+    popup.style.lineHeight = '1.4';
+    popup.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    popup.style.zIndex = '9999';
+    popup.style.transition = 'opacity 0.2s';
+    popup.style.opacity = '0';
+
+    // Position it near the clicked button
+    const rect = btn.getBoundingClientRect();
+    popup.style.left = `${rect.right + 8}px`;
+    popup.style.top = `${rect.top - 4 + window.scrollY}px`;
+
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.style.opacity = '1');
+    popup.classList.add('show');
+
+
+    // Auto-close after 5 seconds or on outside click
+    setTimeout(() => popup.remove(), 5000);
+    document.addEventListener('click', (ev) => {
+      if (!popup.contains(ev.target) && ev.target !== btn) popup.remove();
+    }, { once: true });
+  });
+});
+
+// --- Info popup for Storm Path Legend ---
+const legendInfoButton = document.getElementById("storm-legend-info");
+if (legendInfoButton) {
+  legendInfoButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    // Remove any existing popup
+    const existingPopup = document.getElementById("legend-info-popup");
+    if (existingPopup) existingPopup.remove();
+
+    // Create popup
+    const popup = document.createElement("div");
+    popup.id = "legend-info-popup";
+    popup.innerHTML = `
+  <b>Understanding Storm Categories</b><br/><br/>
+  <div style="
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    row-gap: 6px;
+    margin-left: -15px; /* nudges entire icon column slightly left */
+  ">
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: gray; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Tropical Storm (TS)</b>: Winds of 39–73 mph. May cause flooding, fallen branches, and isolated power outages.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: white; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 1</b>: 74–95 mph. Some roof, siding, and tree damage possible; short power losses.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FFFF00; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 2</b>: 96–110 mph. Stronger damage to roofs and windows; several-day outages common.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #FFA500; font-size: 22px; transform: scale(1.1); line-height: 20px;">▲</div>
+    <div><b>Category 3</b>: 111–129 mph. Major structural damage; water and power unavailable for days to weeks.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FF0000; font-size: 21px; transform: scale(2.2); line-height: 20px;">■</div>
+    <div><b>Category 4</b>: 130–156 mph. Severe structural failures; many trees down; long recovery times.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #8B0000; font-size: 22px; transform: scale(1.1); line-height: 20px;">⬟</div>
+    <div><b>Category 5</b>: ≥157 mph. Catastrophic damage; widespread destruction and unlivable areas.</div>
+
+  </div>
+  <br/>
+  <em>Note:</em> Heavy rain, storm surge, and flooding can occur far from the storm’s center — even outside these path points.
+`;
+
+
+  
+
+
+    Object.assign(popup.style, {
+      position: "absolute",
+      background: "rgba(35,35,35,0.96)",
+      border: "1.5px solid rgba(255,255,255,0.25)",
+      backdropFilter: "blur(10px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+      borderRadius: "8px",
+      padding: "14px 16px",
+      fontSize: "13.5px",
+      lineHeight: "1.5",
+      color: "white",
+      maxWidth: "320px",
+      zIndex: "9999",
+      transition: "opacity 0.2s ease",
+      opacity: "0",
+    });
+
+    // Append first so we can measure
+    document.body.appendChild(popup);
+
+    const legendBox = document.getElementById("popup-path");
+    const rect = legendBox.getBoundingClientRect();
+
+    // Calculate page-relative coordinates
+    const top = rect.top + window.scrollY;
+    const left = rect.left + window.scrollX;
+
+    // Measure popup height after render
+    const popupHeight = popup.offsetHeight;
+
+    // Position ABOVE the legend
+    const popupTop = Math.max(top - popupHeight - 20, 20); // 20px gap, min 20px from top
+    const popupLeft = left + rect.width / 2 - popup.offsetWidth / 2;
+
+    popup.style.top = `${popupTop}px`;
+    popup.style.left = `${popupLeft}px`;
+
+    requestAnimationFrame(() => (popup.style.opacity = "1"));
+
+    // Remove when clicked outside or after 15s
+    const removePopup = () => popup.remove();
+    setTimeout(removePopup, 15000);
+    document.addEventListener(
+      "click",
+      (ev) => {
+        if (!popup.contains(ev.target) && ev.target !== legendInfoButton)
+          removePopup();
+      },
+      { once: true }
+    );
+  });
+}
+
+const windbackInfoButton = document.getElementById('windback-info-button');
+if (windbackInfoButton) {
+  windbackInfoButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    // Remove any existing popup
+    const existingPopup = document.getElementById('windback-info-popup');
+    if (existingPopup) existingPopup.remove();
+
+    // Create info popup
+    const popup = document.createElement('div');
+    popup.id = 'windback-info-popup';
+    popup.textContent = 'This is a prototyping tool to simulate the hurricane as if it was real time.';
+    
+    // Apply same styling as layer-info-popup
+    Object.assign(popup.style, {
+      position: 'absolute',
+      background: 'rgba(35, 35, 35, 0.92)',
+      border: '1.5px solid rgba(255, 255, 255, 0.4)',
+      backdropFilter: 'blur(10px) brightness(1.05)',
+      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6), 0 0 8px rgba(255, 255, 255, 0.08)',
+      color: 'white',
+      padding: '10px 12px',
+      borderRadius: '8px',
+      fontSize: '13px',
+      maxWidth: '240px',
+      lineHeight: '1.45',
+      zIndex: '10001',
+      transition: 'opacity 0.2s ease',
+      opacity: '0'
+    });
+
+    // Position near the button
+    const rect = windbackInfoButton.getBoundingClientRect();
+    popup.style.left = `${rect.right + 8}px`;
+    popup.style.top = `${rect.top - 4 + window.scrollY}px`;
+
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.style.opacity = '1');
+
+    // Auto-close after 5 seconds or on outside click
+    setTimeout(() => popup.remove(), 5000);
+    document.addEventListener('click', (ev) => {
+      if (!popup.contains(ev.target) && ev.target !== windbackInfoButton) popup.remove();
+    }, { once: true });
+  });
+}
 
 })();

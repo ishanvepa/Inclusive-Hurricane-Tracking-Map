@@ -1,16 +1,4 @@
 /* ====== Base Layout ====== */
-#map-container {
-  height: 100%;
-  min-width: 320px;
-  max-width: 100%;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-#map-container:focus {
-  outline: 2px solid #0077cc; 
-}
-
 html, body {
   height: 100%;
   margin: 0;
@@ -19,118 +7,106 @@ html, body {
   padding: 0;
 }
 
-.loading {
-  margin-top: 10em;
-  text-align: center;
-  color: gray;
+#map-container {
+  height: 100%;
+  width: 100%;
+  min-width: 320px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+#map-container:focus {
+  outline: 2px solid #0077cc; 
 }
 
 #map-wrapper {
   position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
-#map-title-box {
+/* ====== Unified Header ====== */
+#unified-header {
   position: absolute;
   top: 20px;
-  left: 10px;
-  height: 40px;
-  display: flex;
-  align-items: center;
+  left: 20px;
   background-color: rgba(0, 0, 0, 0.85);
   color: white;
   border-radius: 20px;
-  padding: 0 20px; 
+  padding: 16px 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
 
-
-#map-title-box h1 {
+#unified-header h1 {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
   line-height: 1;
-  display: flex;
-  align-items: center;
+  text-align: center;
+  white-space: nowrap;
 }
 
+#button-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-#about-button {
+.header-button {
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-#about-button img {
-  width: 18px;
-  height: 18px;
-  filter: invert(1); /* makes black icon appear white */
-}
-
-
-
-
-
-/* ====== Taskbar Buttons ====== */
-#taskbar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  height: auto;
-  background-color: rgba(0, 0, 0, 0.85);
-  border-radius: 20px !important;
-  display: flex;
-  align-items: center;
-  padding: 0px 20px;
-  gap: 24px;
-  box-shadow: 0px 3px 6px rgba(0,0,0,0.25);
-  z-index: 1000;
-  overflow: visible;
-}
-
-.taskbar-button {
-  background: none;
-  border: none;
-  padding: 6px;
+  padding: 2px;  /* Increased from 6px for more consistent spacing */
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 40px;   /* Fixed width for all buttons */
+  height: 40px;  /* Fixed height for all buttons */
 }
 
-.taskbar-button:hover,
-.taskbar-button:focus {
+.header-button:hover,
+.header-button:focus {
   background-color: #005FCC;
   outline: none;
 }
 
-.taskbar-button.active {
-  background-color: #0077cc; 
+.header-button.active {
+  background-color: #0077cc;
 }
 
-
-.taskbar-button img {
+/* Standardize ALL icon sizes */
+.header-button img {
   display: block;
-  width: auto;
-  height: 24px;
-  padding: 2px;
+  width: 20px !important;   /* Force consistent width */
+  height: 20px !important;  /* Force consistent height */
+  object-fit: contain;      /* Preserve aspect ratio */
+}
+
+#time-toggle img,
+#about-button img {
+  filter: invert(1);
 }
 
 .zoom-button {
-  width: 30px;
-  height: auto;
+  width: 40px;   /* Match other buttons */
+  height: 40px;  /* Match other buttons */
   color: white;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 8px; /* match .taskbar-button */
-  padding: 6px;
-  background: none;
-  border: none;
-  transition: background-color 0.2s ease;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .zoom-button::after {
@@ -138,54 +114,204 @@ html, body {
   font-weight: normal !important;
 }
 
-
-
-/* ====== Popups (Glossary, Layers, POI) ====== */
-.popup {
-  display: none;
-  font-size: 0.95em;
+/* Tooltip for header buttons */
+.header-button::after {
+  content: attr(data-tooltip);
   position: absolute;
+  bottom: -40px;  /* Moved down from toolbar */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10000;
+}
+
+.header-button:hover::after,
+.header-button:focus::after {
+  opacity: 1;
+}
+
+/* Hide tooltip when button is active (popup is open) */
+.header-button.active::after {
+  display: none !important;
+}
+
+#time-dropdown {
+  width: 280px !important;
+  padding: 1em !important;  /* Match other popups */
+  background: rgba(0, 0, 0, 0.85) !important;  /* Match other popups */
+  border: none;
+  border-radius: 20px !important;  /* Match other popups */
+}
+
+/* Time dropdown header - match .popup-header */
+.time-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;  /* Match other popups */
+}
+
+/* Time dropdown heading - match .popup-heading */
+.time-dropdown-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-dropdown-heading img {
+  width: 16px;
+  height: 16px;
+  filter: invert(1);
+  flex-shrink: 0;
+}
+
+.time-dropdown-heading h3 {
+  margin: 0;
+  font-size: 1.1rem;  /* Match .popup-title */
+  font-weight: 700;   /* Match .popup-title */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Info and close button container */
+.time-dropdown-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Time info button - match .info-button */
+.time-info-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.time-info-button:hover {
+  opacity: 1;
+}
+
+.time-info-button img {
+  filter: invert(1);
+  width: 14px;
+  height: 14px;
+}
+
+/* Close button - match .popup-header .close-popup */
+.time-dropdown-header .close-popup {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-dropdown-header .close-popup img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* Time dropdown items container */
+.time-dropdown-items {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.75em;  /* Match .popup-content */
+}
+
+/* Adjust dropdown items */
+#time-dropdown .dropdown-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid #333;
+  font-family: 'Inter', sans-serif;
+}
+
+#time-dropdown .dropdown-item:hover,
+#time-dropdown .dropdown-item:focus {
+  background-color: #444;
+  outline: none;
+}
+
+#time-dropdown .dropdown-item:last-child {
+  border-bottom: none;  /* Remove border from last item */
+}
+
+/* ====== Popup Wrappers  ====== */
+.button-popup-wrapper {
+  position: fixed !important;
+  top: 130px !important;  /* Changed from 100px - adds more space below toolbar */
+  left: 20px !important;
+  z-index: 10000 !important;
+}
+
+/* ====== Popups ====== */
+.popup {
+  display: none;  
+  font-size: 0.95em;
+  position: relative;
   background: rgba(0, 0, 0, 0.85);
   color: white;
   padding: 1em;
   border-radius: 20px;
-  z-index: 999;
+  width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;  /* Re-enable clicks on popup itself */
+}
+
+/* When popup is visible */
+.popup[style*="display: block"] {
+  display: block !important;
+}
+
+/* Specific popup adjustments if needed */
+#poi-popup {
+  width: 240px;
+}
+
+#wiki-popup,
+#layers-popup,
+#sonification-popup {
   width: 250px;
 }
-
-#poi-popup .popup-content p {
-  margin-top: 0 !important;
-  margin-bottom: 0.5em !important;
-  font-size: 0.8rem;
-}
-
 
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0px !important;
+  margin-bottom: 0.5em;
 }
 
 .popup-heading {
   display: flex;
   align-items: center;
-  gap: 0em; 
+  gap: 8px;
 }
 
-.popup-icon {
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 8px;
-  transform: translateY(-6.5px); 
-}
-
-.glossary-icon {
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 8px;
+.popup-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
 }
 
 .popup-header .close-popup {
@@ -199,157 +325,28 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(-5px);
 }
 
 .popup-header .close-popup img {
   display: block;
   width: 16px;
   height: 16px;
-  object-fit: contain;
 }
 
-.layer-popup {
-  display: none;
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  align-items: center;
-  padding: 0.2em 1em;
-  border-radius: 20px;
-  z-index: 999;
-  width: 280px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-sizing: border-box;
+.popup-content {
+  margin-top: 0.75em;
 }
 
+/* ====== POI Popup Specific ====== */
 #poi-popup {
   width: 240px;
-  padding: 1em;
-  background-color: rgba(0, 0, 0, 0.85);
-  border-radius: 20px;
-  color: white;
-  text-align: center;
 }
 
-.location-list {
-  list-style: none;       
-  padding: 0;          
-  margin-top: 10px;
-}
-
-.location-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1); 
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.9em;
-  color: white;          
-  text-align: left;
-  margin-bottom: 6px;
-}
-
-.location-list li span {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9em;
-  font-weight: normal;
-  line-height: 1.2;
-}
-
-
-
-.remove-location {
-  background: none;
-  border: none;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+#poi-popup .popup-content p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
   font-size: 0.9em;
 }
-
-.remove-location:hover {
-  background: rgba(255, 255, 255, 0.15); /* subtle hover */
-}
-
-
-.popup-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
-  margin-bottom: 0.75em;
-  line-height: 1.1em;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-
-.dropdown-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
-}
-
-.dropdown-menu .dropdown-item {
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  border-bottom: 1px solid #333;
-}
-
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:focus {
-  background-color: #444;
-  outline: none;
-}
-
-#time-toggle {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  margin-left: 4px;
-}
-
-#time-toggle img {
-  width: 16px;
-  height: 16px;
-  filter: invert(1); /* white on dark */
-}
-
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 30px;
-  background-color: #222;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 0;
-  max-height: 200px;
-  overflow-y: auto;
-  font-size: 14px;
-  z-index: 9999;
-  width: 220px;
-}
-
-.dropdown-menu div {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-.dropdown-menu div:hover {
-  background-color: #444;
-}
-
 
 #location-input {
   width: 100%;
@@ -378,26 +375,226 @@ html, body {
   text-decoration: none;
 }
 
-#message {
-  font-size: 9px !important;
-  margin-top: 0.25em;
+.location-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
 }
 
-
-/* ====== Legend Styling ====== */
-.legend-container {
+.location-list li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  color: white;
+  margin-bottom: 6px;
 }
 
+.remove-location {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.remove-location:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#message {
+  font-size: 12px;
+  margin-top: 0.5em;
+}
+
+/* ====== Wiki Container ====== */
+.wiki-container {
+  padding: 8px 0;
+}
+
+.wiki-item {
+  margin-bottom: 0.75em;
+}
+
+.wiki-link {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ====== About/Info Modals ====== */
+/* About popup - wider and scrollable */
+#about-popup {
+  width: 500px !important;  /* Much wider than standard popups */
+  max-width: 90vw;  /* But don't exceed 90% of viewport width */
+  max-height: 70vh;  /* Maximum height is 70% of viewport height */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  overflow-x: hidden;  /* Prevent horizontal scrolling */
+}
+
+/* Better spacing for about content */
+#about-popup .popup-content {
+  padding-right: 8px;  /* Space for scrollbar */
+}
+
+#about-popup .popup-content h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  color: #90cdf4;
+}
+
+#about-popup .popup-content h3:first-child {
+  margin-top: 0;  /* No margin on first heading */
+}
+
+#about-popup .popup-content p {
+  margin-bottom: 0.75em;
+  line-height: 1.5;
+}
+
+#about-popup .popup-content ul {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+#about-popup .popup-content li {
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+/* Custom scrollbar styling for about popup */
+#about-popup::-webkit-scrollbar {
+  width: 8px;
+}
+
+#about-popup::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#about-popup::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#about-popup::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* For Firefox */
+#about-popup {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure about popup wrapper doesn't restrict size */
+#about-popup-wrapper {
+  width: auto !important;
+}
+
+/* Sonification info modal - same styling as about popup */
+#sonification-info-modal {
+  width: 500px !important;
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Position sonification info modal in the center of the screen */
+#sonification-info-modal-wrapper {
+  left: 50% !important;
+  transform: translateX(-50%);
+  width: auto !important;
+}
+
+#sonification-info-modal .popup-content {
+  padding-right: 8px;
+}
+
+#sonification-info-modal .popup-content h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+  color: #90cdf4;
+}
+
+#sonification-info-modal .popup-content h3:first-child {
+  margin-top: 0;
+}
+
+#sonification-info-modal .popup-content p {
+  margin-bottom: 0.8em;
+  line-height: 1.5;
+}
+
+#sonification-info-modal .popup-content ul {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+#sonification-info-modal .popup-content li {
+  margin-bottom: 0.4em;
+}
+
+#sonification-info-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#sonification-info-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+#sonification-info-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* ====== Layer Legend Popup ====== */
+.layer-popup {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 10px;
+  background: rgba(25, 25, 25, 0.95);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  z-index: 999;
+  width: fit-content;
+}
+
+#popup-path .legend-container {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  column-gap: 16px;
+  row-gap: 4px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
+  gap: 6px;
+  font-size: 14px;
 }
 
 #popup-path span.symbol {
@@ -410,11 +607,6 @@ html, body {
   -webkit-text-stroke: 1px white;
 }
 
-#popup-path span.triangle,
-#popup-path span.pentagon {
-  transform: scale(0.8);
-}
-
 #popup-path span.circle {
   transform: scale(1.5);
 }
@@ -423,110 +615,88 @@ html, body {
   transform: scale(1.7);
 }
 
-#popup-path h3 {
-  margin: 0;
-  padding: 2px;
-  font-size: 1em;
+#popup-path span.triangle,
+#popup-path span.pentagon {
+  transform: scale(0.8);
 }
 
-/* ====== Glossary Popup ====== */
-#glossary-popup {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
-  left: 10px;
-  max-height: 370px;
-  max-width: 400px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  border-radius: 15px;
-  z-index: 999;
-  display: none;
-  flex-direction: column;
-  overflow: hidden; /* prevent the header from scrolling */
-}
-
-#glossary-button {
-  position: relative;
-}
-
-.glossary-button-inner {
-  position: relative;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-}
-
-#glossary-header {
-  margin-bottom: 0px;
-}
-
-#glossary-title {
-  font-size: 1.4em;
-  font-weight: 700;
-  margin: 0;
-  padding: 0;
-}
-
-#glossary-header hr {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.7);
-  margin-top: 6px;
-  margin-bottom: 0;
-}
-
-.glossary-close {
+#layer-info-popup {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  background: rgba(35, 35, 35, 0.92) !important;  /* Less transparent */
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;  /* Gray border back */
+  backdrop-filter: blur(10px) brightness(1.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6),
+              0 0 8px rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  max-width: 240px;
+  line-height: 1.45;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  z-index: 10001 !important;  /* Above the layers popup */
+}
+
+/* Position it ABOVE the button that triggered it */
+#layer-info-popup.show {
+  transform: scale(1.03);
+  opacity: 1;
+}
+
+/* ====== Info Buttons ====== */
+.info-button {
   background: none;
   border: none;
   padding: 0;
+  margin-left: 6px;
   cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(2px);
+  vertical-align: middle;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.glossary-close img {
-  display: block;
+.info-button:hover {
+  opacity: 1;
+}
+
+.info-button img {
+  filter: invert(1);
+}
+
+/* ====== Accessibility ====== */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* ====== Sonification ====== */
+
+#sonification-info-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+#sonification-info-button:hover {
+  opacity: 1;
+}
+
+#sonification-info-button img {
+  filter: invert(1);
   width: 18px;
   height: 18px;
 }
 
-
-#glossary-content-container {
-  height: 100%;
-  max-height: calc(370px - 50px); /* adjust based on header height */
-  overflow-y: auto;
-  padding: 10px;
-  box-sizing: border-box;
-}
-
-
-.glossary-icon-wrapper {
-  position: relative;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-}
-
-#glossary-notification {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 10px;
-  height: 10px;
-  background-color: rgba(255, 0, 0, 0.9);
-  border-radius: 50%;
-  display: block;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* ====== POI Marker ====== */
+/* ====== POI Marker Animation ====== */
 .pulse-marker {
   width: 16px;
   height: 16px;
@@ -539,154 +709,227 @@ html, body {
   z-index: 10;
 }
 
-
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0.4); }
   70% { box-shadow: 0 0 0 15px rgba(3, 132, 252, 0); }
   100% { box-shadow: 0 0 0 0 rgba(3, 132, 252, 0); }
 }
 
-#message {
-  font-size: 12px;
+#map-wrapper {
+  position: fixed !important;  /* Changed from relative */
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
 }
 
-/* ====== Wiki Panel ====== */
-#popup-wiki h3 {
-  margin: 0;
-  padding: 6px 10px;
-  font-size: 1em;
-  text-align: left;
-}
-
-.wiki-container {
-  padding: 8px 10px;
-}
-
-.wiki-item {
-  margin-bottom: 0.75em;
-}
-
-.wiki-link {
-  color: #fff;
-  text-decoration: underline;
-}
-
-.wiki-link::after {
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M14 3h7v7h-2V6.414l-9.293 9.293-1.414-1.414L17.586 5H14V3z'/%3E%3Cpath fill='%23fff' d='M5 5h5V3H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-5h-2v5H5V5z'/%3E%3C/svg%3E");
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 4px;
-  width: 1em;
-  height: 1em;
-}
-
-
-/* ====== Accessibility ====== */
-.visually-hidden {
+#map-container {
   position: absolute !important;
-  height: 1px;
-  width: 1px;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 320px;
+  margin: 0;
   overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
-  white-space: nowrap;
 }
 
-.highcharts-title {
-  font-size: 20px !important;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.taskbar-button {
-  position: relative;
-}
-
-/* ====== Tool tip styling ====== */
-.taskbar-button::after {
-  content: attr(data-tooltip);
+/* ====== Explanation Popup ====== */
+#explain-popup-wrapper {
   position: absolute;
-  bottom: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
+  top: 80px;
+  left: 20px;
+  z-index: 999;
   pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 10000;
 }
 
-.taskbar-button:hover::after,
-.taskbar-button:focus::after {
-  opacity: 1;
-}
-
-/* about popup */
-
-.about-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  z-index: 9999;
-  max-width: 50%;
-  max-height: 75vh;
+#explain-popup {
+  width: 400px;
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
 }
 
-
-.about-popup-content {
-  position: relative;
+#explain-popup .popup-content {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
 }
 
-.about-popup .close-popup {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
+/* Regenerate button styling */
+.explain-regenerate-button {
+  background: none;
   border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 4px;
+  font-size: 18px;
   cursor: pointer;
-}
-
-.about-inner {
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.95em;
+}
+
+.explain-regenerate-button:hover:not(:disabled) {
+  background-color: #005FCC;
+}
+
+.explain-regenerate-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Loading State */
+.explain-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  gap: 12px;
+}
+
+.explain-loading p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #0077cc;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Explanation Content Sections */
+.explain-section {
+  margin-bottom: 16px;
+}
+
+.explain-section:last-child {
+  margin-bottom: 0;
+}
+
+.explain-headline h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffd700;
+  line-height: 1.3;
+}
+
+.explain-summary {
+  font-size: 14px;
   line-height: 1.6;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
 }
 
-.about-inner h1 {
-  font-size: 1.5em;
-  margin-bottom: 0.5em;
+.explain-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.about-inner h2 {
-  font-size: 1.2em;
-  color: #90cdf4;
+.explain-bullets {
+  margin: 0;
+  padding-left: 18px;
+  list-style-type: disc;
 }
 
-.about-inner ul {
-  padding-left: 1.2em;
+.explain-bullets li {
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.about-inner li {
-  margin-bottom: 0.5em;
+.explain-bullets li:last-child {
+  margin-bottom: 0;
 }
 
-.about-inner a {
-  color: #90cdf4;
-  text-decoration: underline;
+.explain-section p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.about-inner a:hover {
-  text-decoration: none;
+/* Error State */
+.explain-error {
+  padding: 20px;
+  text-align: center;
 }
- 
+
+.explain-error p {
+  margin: 0 0 14px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Placeholder State */
+.explain-placeholder {
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.explain-placeholder p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.explain-placeholder p:first-child {
+  font-size: 15px;
+  margin-bottom: 14px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.explain-placeholder strong {
+  color: white;
+  font-weight: 600;
+}
+
+.explain-retry-button {
+  background: #0077cc;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.explain-retry-button:hover {
+  background: #005fcc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #explain-popup {
+    width: calc(100vw - 40px);
+    max-width: 400px;
+  }
+  
+  #explain-popup-wrapper {
+    left: 20px;
+    right: 20px;
+  }
+}
