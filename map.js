@@ -211,7 +211,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       reflow: false,
       panning: { enabled: true, type: "xy" },
     },
-    title: { text: null },
+    title: { text: 'Hurricane Michael 2018 Path', style: { display: 'none' }},
     exporting: { enabled: false },
     legend: { enabled: false, align: "right", layout: "vertical", verticalAlign: "bottom", x: -20, y: -20 },
     plotOptions: {
@@ -243,6 +243,12 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         accessibility: { enabled: false },
         data: [{ geometry: { type: "LineString", coordinates: hurricane_path.map(p => [p.lon, p.lat]) } }] },
       { id: 'user-locations', name: "User Locations", type: "mappoint", zIndex: 5, visible: true,
+        accessibility: {
+        point: {
+          descriptionFormatter: function(point) {
+            return `${point.name}, Lat: ${point.lat}, Long: ${point.lon}`
+          }}
+        },
         tooltip: {
           useHTML: true,
           hideDelay: 500,
@@ -262,7 +268,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
               month: 'short', day: 'numeric', year: 'numeric',
               hour: 'numeric', minute: 'numeric'
             });
-            return `${point.name}, ${dateStr}`;
+            return `${point.name}, ${dateStr}, Lat: ${point.lat}, Long: ${point.lon}`;
           }
         }
       },
@@ -357,6 +363,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
             }
           }
         },
+
         dataLabels: { 
           enabled: true,
           useHTML: true,
@@ -461,6 +468,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       } else {
         popup.style.display = 'block';
         button.classList.add('active');
+        popup.focus();
         console.log(`  Opened ${popupId}`);
       }
     });
@@ -471,7 +479,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         console.log(`Close button clicked for ${popupId}`);
         popup.style.display = 'none';
         button.classList.remove('active');
-        button.blur();
+        button.focus();
+        // button.blur();
       });
     }
     
@@ -529,7 +538,8 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       explainCloseBtn.addEventListener('click', () => {
         explainPopup.style.display = 'none';
         whatsHappeningButton.classList.remove('active');
-        whatsHappeningButton.blur();
+        // whatsHappeningButton.blur();
+        
       });
     }
   }
@@ -656,6 +666,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       e.preventDefault();
     
       infoModal.style.display = 'block';
+      infoModal.focus();
       console.log('Modal display set to block');
     });
     
@@ -751,9 +762,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       popup.style.bottom = `${10 + (popupHeight + 10) * index}px`;
     });
   }
-
-  // Add marker from address lookup
-  document.getElementById('add-location').addEventListener('click', async () => {
+  const addLocation = async () => {
     
     const addressInput = document.getElementById('location-input');
     const messageDiv = document.getElementById('message');
@@ -792,7 +801,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           addedLocations.set(id, { name: address, point });
           renderLocationList();
     
-          //messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          messageDiv.innerText = `Marker added at (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
           addressInput.value = "";
         } else {
           console.warn("Missing or invalid geometry:", geometry);
@@ -808,7 +817,16 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     }
     
 
-  });
+  }
+
+  // Add marker from address lookup
+  document.getElementById('add-location').addEventListener('click', addLocation);
+  document.getElementById('location-input').addEventListener("keydown", (event) => {
+    if (event.key === "Enter")
+    {
+      addLocation();
+    }
+  } )
 
   const addressInput = document.getElementById('location-input');
   const messageDiv = document.getElementById('message');
@@ -1000,6 +1018,7 @@ document.querySelectorAll('.info-button').forEach(btn => {
     popup.style.zIndex = '9999';
     popup.style.transition = 'opacity 0.2s';
     popup.style.opacity = '0';
+    popup.tabIndex = -1;
 
     // Position it near the clicked button
     const rect = btn.getBoundingClientRect();
@@ -1029,11 +1048,16 @@ if (legendInfoButton) {
     const existingPopup = document.getElementById("legend-info-popup");
     if (existingPopup) existingPopup.remove();
 
+    
+
     // Create popup
     const popup = document.createElement("div");
     popup.id = "legend-info-popup";
+    popup.tabIndex = -1;
     popup.innerHTML = `
   <b>Understanding Storm Categories</b><br/><br/>
+  <button id="close-info" aria-label="Close Legend Info">X
+    </button>
   <div style="
     display: grid;
     grid-template-columns: 34px 1fr;
@@ -1042,22 +1066,22 @@ if (legendInfoButton) {
     margin-left: -15px; /* nudges entire icon column slightly left */
   ">
 
-    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: gray; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.3px white; color: gray; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
     <div><b>Tropical Storm (TS)</b>: Winds of 39–73 mph. May cause flooding, fallen branches, and isolated power outages.</div>
 
-    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: white; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.3px white; color: white; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
     <div><b>Category 1</b>: 74–95 mph. Some roof, siding, and tree damage possible; short power losses.</div>
 
-    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FFFF00; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FFFF00; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
     <div><b>Category 2</b>: 96–110 mph. Stronger damage to roofs and windows; several-day outages common.</div>
 
-    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #FFA500; font-size: 22px; transform: scale(1.1); line-height: 20px;">▲</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.6px white; color: #FFA500; font-size: 22px; transform: scale(1.1); line-height: 20px;">▲</div>
     <div><b>Category 3</b>: 111–129 mph. Major structural damage; water and power unavailable for days to weeks.</div>
 
-    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FF0000; font-size: 21px; transform: scale(2.2); line-height: 20px;">■</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FF0000; font-size: 21px; transform: scale(2.2); line-height: 20px;">■</div>
     <div><b>Category 4</b>: 130–156 mph. Severe structural failures; many trees down; long recovery times.</div>
 
-    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #8B0000; font-size: 22px; transform: scale(1.1); line-height: 20px;">⬟</div>
+    <div aria-hidden="true" style="text-align: center; -webkit-text-stroke: 0.6px white; color: #8B0000; font-size: 22px; transform: scale(1.1); line-height: 20px;">⬟</div>
     <div><b>Category 5</b>: ≥157 mph. Catastrophic damage; widespread destruction and unlivable areas.</div>
 
   </div>
@@ -1089,6 +1113,8 @@ if (legendInfoButton) {
     // Append first so we can measure
     document.body.appendChild(popup);
 
+    
+
     const legendBox = document.getElementById("popup-path");
     const rect = legendBox.getBoundingClientRect();
 
@@ -1107,10 +1133,14 @@ if (legendInfoButton) {
     popup.style.left = `${popupLeft}px`;
 
     requestAnimationFrame(() => (popup.style.opacity = "1"));
-
+    popup.focus();
     // Remove when clicked outside or after 15s
     const removePopup = () => popup.remove();
-    setTimeout(removePopup, 15000);
+    document.getElementById("close-info").onclick = () => {
+      removePopup();
+      legendInfoButton.focus();
+    }
+
     document.addEventListener(
       "click",
       (ev) => {
@@ -1135,7 +1165,7 @@ if (windbackInfoButton) {
     const popup = document.createElement('div');
     popup.id = 'windback-info-popup';
     popup.textContent = 'This is a prototyping tool to simulate the hurricane as if it was real time.';
-    
+    popup.tabIndex = -1;
     // Apply same styling as layer-info-popup
     Object.assign(popup.style, {
       position: 'absolute',
@@ -1162,6 +1192,7 @@ if (windbackInfoButton) {
     document.body.appendChild(popup);
     requestAnimationFrame(() => popup.style.opacity = '1');
 
+    popup.focus();
     // Auto-close after 5 seconds or on outside click
     setTimeout(() => popup.remove(), 5000);
     document.addEventListener('click', (ev) => {

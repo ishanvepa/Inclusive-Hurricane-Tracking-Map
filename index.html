@@ -67,7 +67,7 @@
     </div>
 
     <!-- Time Dropdown Wrapper -->
-    <div class="button-popup-wrapper" id="time-dropdown-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="time-dropdown-wrapper">
       <div id="time-dropdown" class="dropdown-menu popup" role="dialog" aria-labelledby="time-dropdown-title" tabindex="-1">
         
         <!-- Header matching other popups -->
@@ -96,7 +96,7 @@
     </div>
 
     <!-- About Popup -->
-<div class="button-popup-wrapper" id="about-popup-wrapper">
+<div tabindex="-1" class="button-popup-wrapper" id="about-popup-wrapper">
   <div class="popup" id="about-popup" role="dialog" aria-labelledby="about-title" tabindex="-1">
     <div class="popup-header">
       <div class="popup-heading">
@@ -133,7 +133,7 @@
     
 
     <!-- Layers Popup -->
-    <div class="button-popup-wrapper" id="layers-popup-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="layers-popup-wrapper">
       <div class="popup" id="layers-popup" role="dialog" aria-labelledby="layers-title" aria-modal="true" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -172,7 +172,7 @@
     </div>
 
     <!-- POI Popup -->
-    <div class="button-popup-wrapper" id="poi-popup-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="poi-popup-wrapper">
       <div class="popup" id="poi-popup" role="dialog" aria-labelledby="poi-title" aria-modal="true" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -196,7 +196,7 @@
     </div>
 
     <!-- Wiki Popup -->
-    <div class="button-popup-wrapper" id="wiki-popup-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="wiki-popup-wrapper">
       <div class="popup" id="wiki-popup" role="dialog" aria-labelledby="wiki-title" aria-modal="true" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -219,7 +219,7 @@
     </div>
 
     <!-- Sonification Popup -->
-    <div class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
+    <div tabindex="-1" class="button-popup-wrapper" style="position: absolute; top: 50px; left: 0;">
       <div class="popup" id="sonification-popup" role="dialog" aria-labelledby="sonification-title" aria-modal="true" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -290,7 +290,7 @@
     </div>
 
     <!-- Sonification Info Modal -->
-    <div class="button-popup-wrapper" id="sonification-info-modal-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="sonification-info-modal-wrapper">
       <div class="popup" id="sonification-info-modal" role="dialog" aria-labelledby="sonification-info-title" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -303,16 +303,16 @@
         </div>
         
         <div class="popup-content">
-          <p><strong>Sonification</strong> is the use of sound to represent data. Just as a graph shows data visually, sonification lets you <em>hear</em> the data. This makes hurricane information accessible to low-vision and visually impaired users, and provides an additional sensory dimension for everyone.</p>
+          <p><b>Sonification</b> is the use of sound to represent data. Just as a graph shows data visually, sonification lets you hear the data. This makes hurricane information accessible to low-vision and visually impaired users, and provides an additional sensory dimension for everyone.</p>
           
           <h3>Sound Mapping</h3>
           <p>Four layers of sound work together to represent different aspects of the hurricane:</p>
 
           <h3>🌪️ Wind Speed → Woodwinds (Flute-like)</h3>
           <ul>
-            <li><strong>Low wind:</strong> Slow, lower-pitched notes with longer gaps</li>
-            <li><strong>High wind:</strong> Rapid, high-pitched frantic trills</li>
-            <li><strong>Volume:</strong> Gets louder as wind speed increases</li>
+            <li><b>Low wind:</b> Slow, lower-pitched notes with longer gaps</li>
+            <li><b>High wind:</b> Rapid, high-pitched frantic trills</li>
+            <li><b>Volume:</b> Gets louder as wind speed increases</li>
           </ul>
 
           <h3>🌡️ Atmospheric Pressure → Strings (Low Drone)</h3>
@@ -356,7 +356,7 @@
 
 
 <!-- Glossary Popup -->
-<div class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
+<div tabindex="-1" class="button-popup-wrapper" style="position: absolute; top: 50px; right: 160px;">
   <div class="popup" id="glossary-popup" role="dialog" aria-labelledby="glossary-title" aria-modal="true" tabindex="-1">
     
     <!-- Close button in top-right corner -->
@@ -369,7 +369,7 @@
 </div>
 
     <!-- Explanation Popup -->
-    <div class="button-popup-wrapper" id="explain-popup-wrapper">
+    <div tabindex="-1" class="button-popup-wrapper" id="explain-popup-wrapper">
       <div class="popup" id="explain-popup" role="dialog" aria-labelledby="explain-title" tabindex="-1">
         <div class="popup-header">
           <div class="popup-heading">
@@ -396,6 +396,11 @@
       <div id="map-container" role="application" tabindex="0" aria-label="Interactive hurricane tracking map showing Hurricane Michael 2018 path, cone of uncertainty, and user-marked locations. Use arrow keys to navigate."></div>
     </div>
 
+    <!-- Highcharts Description -->
+     <p class="highcharts-description">
+      Map of Hurricane Michael's trajectory over time. Hurricane Michael made landfall in the Florida Panhandle on October 10, 2018 as a Category 5 storm.
+     </p>
+
     <!-- Storm Path Legend -->
     <div class="layer-popup" id="popup-path" tabindex="0" aria-label="Storm path legend panel">
       <h2 class="popup-title">
@@ -404,7 +409,7 @@
           <img src="media/question.svg" alt="" aria-hidden="true" width="14" height="14" style="filter: invert(1);" />
         </button>
       </h2>
-      <div class="legend-container">
+      <div class="legend-container" tabindex="-1" aria-hidden="true">
         <div class="legend-item"><span class="symbol circle" style="color: gray;">●</span><span>TS</span></div>
         <div class="legend-item"><span class="symbol circle" style="color: white;">●</span><span>Cat 1</span></div>
         <div class="legend-item"><span class="symbol circle" style="color: #FFFF00;">●</span><span>Cat 2</span></div>
@@ -412,6 +417,41 @@
         <div class="legend-item"><span class="symbol square" style="color: #FF0000;">■</span><span>Cat 4</span></div>
         <div class="legend-item"><span class="symbol pentagon" style="color: #8B0000;">⬟</span><span>Cat 5</span></div>
       </div>
+    </div>
+
+  <div id="legend-info-popup" tabindex="-1" style="display:none">
+      <b>Understanding Storm Categories</b><br/><br/>
+  <button id="close-info" aria-label="Close Legend Info">X
+    </button>
+  <div style="
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    row-gap: 6px;
+    margin-left: -15px; /* nudges entire icon column slightly left */
+  ">
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: gray; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Tropical Storm (TS)</b>: Winds of 39–73 mph. May cause flooding, fallen branches, and isolated power outages.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: white; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 1</b>: 74–95 mph. Some roof, siding, and tree damage possible; short power losses.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FFFF00; font-size: 20px; transform: scale(2.2); line-height: 20px;">●</div>
+    <div><b>Category 2</b>: 96–110 mph. Stronger damage to roofs and windows; several-day outages common.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #FFA500; font-size: 22px; transform: scale(1.1); line-height: 20px;">▲</div>
+    <div><b>Category 3</b>: 111–129 mph. Major structural damage; water and power unavailable for days to weeks.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.3px white; color: #FF0000; font-size: 21px; transform: scale(2.2); line-height: 20px;">■</div>
+    <div><b>Category 4</b>: 130–156 mph. Severe structural failures; many trees down; long recovery times.</div>
+
+    <div style="text-align: center; -webkit-text-stroke: 0.6px white; color: #8B0000; font-size: 22px; transform: scale(1.1); line-height: 20px;">⬟</div>
+    <div><b>Category 5</b>: ≥157 mph. Catastrophic damage; widespread destruction and unlivable areas.</div>
+
+  </div>
+  <br/>
+  <em>Note:</em> Heavy rain, storm surge, and flooding can occur far from the storm’s center — even outside these path points.
     </div>
 
     <script src="sonification.js"></script>
