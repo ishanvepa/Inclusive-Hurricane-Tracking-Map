@@ -228,6 +228,14 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
       }
     },
     mapNavigation: { enabled: true, enableButtons: false },
+    accessibility: {
+      enabled: true,
+      keyboardNavigation: {
+        enabled: true,
+        order: ['series', 'legend'],  // exclude 'zoom' so Highcharts never creates zoom proxy buttons
+        seriesNavigation: { mode: 'normal' }
+      }
+    },
     series: [
       { name: "Base map", nullColor: "#acb", legendSymbolColor: "#acb", borderColor: "#888", mapData: usa, accessibility: { enabled: false } },
       { type: 'tiledwebmap', name: 'Basemap Tiles', provider: { type: 'OpenStreetMap' }, showInLegend: false, accessibility: { enabled: false } },
@@ -923,7 +931,42 @@ setTimeout(() => {
   // Update popups
   updatePopupPositions();
   chart.redraw();
+
+  // Remove Highcharts' built-in zoom buttons from keyboard/screen reader focus —
+  // we have our own zoom buttons in the header toolbar.
+  document.querySelectorAll(
+    '.highcharts-zoom-in, .highcharts-zoom-out, .highcharts-map-navigation button, [class*="highcharts-zoom"]'
+  ).forEach(el => {
+    el.setAttribute('tabindex', '-1');
+    el.setAttribute('aria-hidden', 'true');
+  });
 }, 1000); // delay to ensure everything is initialized
+
+// Persistent guard: use a MutationObserver to catch Highcharts accessibility proxy
+// buttons for zoom/map-navigation that get injected or re-injected after redraws.
+// We have our own zoom buttons, so these should never be reachable by keyboard or screen reader.
+(function suppressHighchartsZoomProxies() {
+  function neutraliseZoomElements() {
+    document.querySelectorAll(
+      '.highcharts-zoom-in, .highcharts-zoom-out, ' +
+      '.highcharts-map-navigation, .highcharts-map-navigation *, ' +
+      '.highcharts-a11y-proxy-container button[aria-label*="oom"]'
+    ).forEach(el => {
+      if (el.getAttribute('tabindex') !== '-1') el.setAttribute('tabindex', '-1');
+      if (el.getAttribute('aria-hidden') !== 'true') el.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  // Run once after a short delay (catches initial render)
+  setTimeout(neutraliseZoomElements, 1500);
+
+  // Then watch for any future DOM changes inside the map container
+  const mapContainer = document.getElementById('map-container');
+  if (mapContainer) {
+    const observer = new MutationObserver(neutraliseZoomElements);
+    observer.observe(mapContainer, { childList: true, subtree: true });
+  }
+}());
 
 // --- Inline info buttons for layer definitions ---
 document.querySelectorAll('.info-button').forEach(btn => {

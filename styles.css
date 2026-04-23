@@ -673,6 +673,20 @@ html, body {
   white-space: nowrap;
 }
 
+/* Hide Highcharts' built-in zoom/map-navigation buttons entirely.
+   We provide our own zoom buttons in the header toolbar.
+   display:none removes them from layout AND tab order permanently,
+   unlike tabindex manipulation which Highcharts can reset on redraws. */
+.highcharts-map-navigation,
+.highcharts-zoom-in,
+.highcharts-zoom-out,
+button.highcharts-a11y-proxy-element[aria-label="Zoom in"],
+button.highcharts-a11y-proxy-element[aria-label="Zoom out"],
+button.highcharts-a11y-proxy-element[aria-label*="oom in"],
+button.highcharts-a11y-proxy-element[aria-label*="oom out"] {
+  display: none !important;
+}
+
 /* ====== Sonification ====== */
 
 #sonification-info-button {
