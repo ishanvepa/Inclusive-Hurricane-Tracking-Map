@@ -231,6 +231,235 @@ function playBrass(windKnots, dur) {
   setTimeout(() => { synth.dispose(); }, dur * 1000 + 50);
 }
 
+function scheduleStringsOffline(point, startTime, dur, panBus) {
+  if (!isFinite(point.mslp)) return;
+
+  const baseFreq = stringPitchFromPressure(point.mslp);
+  const loud = pressureToBrightness(point.mslp);
+
+  const env = new Tone.AmplitudeEnvelope({
+    attack: 0.05,
+    decay: 0.4,
+    sustain: Math.min(0.9, 0.3 + loud),
+    release: 0.3
+  }).connect(panBus);
+
+  const filt = new Tone.Filter({
+    type: 'lowpass',
+    frequency: 1200,
+    Q: 0.4
+  }).connect(env);
+
+  const osc = new Tone.Oscillator({
+    frequency: baseFreq,
+    type: 'sawtooth'
+  }).connect(filt);
+
+  osc.start(startTime);
+  osc.stop(startTime + dur);
+  env.triggerAttackRelease(dur * 0.95, startTime);
+
+  if (point.mslp < 950) {
+    const detuneSemis = 1.5;
+    const freq2 = baseFreq * Math.pow(2, detuneSemis / 12);
+    const env2 = new Tone.AmplitudeEnvelope({
+      attack: 0.05,
+      decay: 0.4,
+      sustain: Math.min(0.8, 0.25 + loud),
+      release: 0.25
+    }).connect(panBus);
+
+    const filt2 = new Tone.Filter({
+      type: 'lowpass',
+      frequency: 1000,
+      Q: 0.5
+    }).connect(env2);
+
+    const osc2 = new Tone.Oscillator({
+      frequency: freq2,
+      type: 'sawtooth'
+    }).connect(filt2);
+
+    osc2.start(startTime);
+    osc2.stop(startTime + dur);
+    env2.triggerAttackRelease(dur * 0.9, startTime);
+  }
+}
+
+function scheduleWoodwindsOffline(point, startTime, dur, reverb) {
+  if (!isFinite(point.vmax)) return;
+
+  const notes = woodwindNoteCount(point.vmax);
+  const g = woodwindGain(point.vmax);
+  const synth = new Tone.Synth({
+    oscillator: { type: 'triangle' },
+    envelope: { attack: 0.01, decay: 0.08, sustain: 0.1, release: 0.05 }
+  }).connect(new Tone.Gain(g).connect(reverb));
+
+  const scale = [0, 2, 4, 7, 9];
+  const baseHz = 660;
+
+  for (let i = 0; i < notes; i++) {
+    const offset = (i / notes) * (dur * 0.9);
+    const idx = Math.floor((i * 1.7) % scale.length);
+    const semis = scale[idx];
+    const freq = baseHz * Math.pow(2, semis / 12);
+    synth.triggerAttackRelease(freq, 0.06, startTime + offset);
+  }
+}
+
+function scheduleBrassOffline(point, startTime, dur, panBus) {
+  if (!isFinite(point.vmax)) return;
+
+  const category = deriveCategoryFromWind(point.vmax);
+  const cat = Math.max(0, Math.min(5, parseInt(category) || 0));
+  const motif = brassMotifs[cat] || brassMotifs[0];
+  const vol = brassVolume(cat);
+
+  const gain = new Tone.Gain(vol).connect(panBus);
+  const filt = new Tone.Filter({
+    type: 'lowpass',
+    frequency: 1800,
+    Q: 0.6
+  }).connect(gain);
+
+  const synth = new Tone.Synth({
+    oscillator: { type: (cat >= 4 ? 'square' : 'sawtooth') },
+    envelope: { attack: 0.01, decay: 0.12, sustain: 0.0, release: 0.08 }
+  }).connect(filt);
+
+  const baseHz = 220;
+  const stepDur = Math.max(0.06, Math.min(0.18, dur / Math.max(1, motif.length + 1)));
+
+  for (let i = 0; i < motif.length; i++) {
+    const noteTime = startTime + (i * stepDur);
+    synth.triggerAttackRelease(baseHz * Math.pow(2, motif[i] / 12), stepDur * 0.9, noteTime);
+  }
+}
+
+function audioBufferToWavBlob(buffer) {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  const numFrames = buffer.length;
+  const blockAlign = numChannels * (bitDepth / 8);
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numFrames * blockAlign;
+  const wavSize = 44 + dataSize;
+
+  const arrayBuffer = new ArrayBuffer(wavSize);
+  const view = new DataView(arrayBuffer);
+
+  let offset = 0;
+  const writeString = (str) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+    offset += str.length;
+  };
+
+  writeString('RIFF');
+  view.setUint32(offset, 36 + dataSize, true);
+  offset += 4;
+  writeString('WAVE');
+  writeString('fmt ');
+  view.setUint32(offset, 16, true);
+  offset += 4;
+  view.setUint16(offset, format, true);
+  offset += 2;
+  view.setUint16(offset, numChannels, true);
+  offset += 2;
+  view.setUint32(offset, sampleRate, true);
+  offset += 4;
+  view.setUint32(offset, byteRate, true);
+  offset += 4;
+  view.setUint16(offset, blockAlign, true);
+  offset += 2;
+  view.setUint16(offset, bitDepth, true);
+  offset += 2;
+  writeString('data');
+  view.setUint32(offset, dataSize, true);
+  offset += 4;
+
+  const channels = [];
+  for (let c = 0; c < numChannels; c++) {
+    channels.push(buffer.getChannelData(c));
+  }
+
+  for (let i = 0; i < numFrames; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      const sample = Math.max(-1, Math.min(1, channels[c][i]));
+      const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+      view.setInt16(offset, intSample, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+async function renderSequenceToWav(dataPoints, intervalMs = 800) {
+  if (!Array.isArray(dataPoints) || dataPoints.length === 0) {
+    throw new Error('No data points available for export.');
+  }
+
+  const intervalSec = intervalMs / 1000;
+  const tailSec = 2.0;
+  const totalDuration = (dataPoints.length * intervalSec) + tailSec;
+
+  const states = {
+    strings: sonificationState.enableStrings,
+    woodwinds: sonificationState.enableWoodwinds,
+    brass: sonificationState.enableBrass,
+    spatial: sonificationState.enableSpatial
+  };
+
+  const rendered = await Tone.Offline(() => {
+    const masterOut = new Tone.Gain().toDestination();
+    const lpf = new Tone.Filter({ type: 'lowpass', frequency: 8000, Q: 0.7 }).connect(masterOut);
+    const hpf = new Tone.Filter({ type: 'highpass', frequency: 50, Q: 0.7 }).connect(lpf);
+    const panner = new Tone.Panner(0).connect(hpf);
+    const reverbNode = new Tone.Reverb({ decay: 2.5, wet: 0.15 }).connect(panner);
+
+    for (let i = 0; i < dataPoints.length; i++) {
+      const point = dataPoints[i];
+      const start = i * intervalSec;
+
+      if (states.spatial) {
+        panner.pan.setValueAtTime(panFromLon(point.lon), start);
+        hpf.frequency.setValueAtTime(hpfFromLat(point.lat), start);
+      } else {
+        panner.pan.setValueAtTime(0, start);
+        hpf.frequency.setValueAtTime(50, start);
+      }
+
+      if (states.strings) {
+        scheduleStringsOffline(point, start, intervalSec, panner);
+      }
+      if (states.woodwinds) {
+        scheduleWoodwindsOffline(point, start, intervalSec, reverbNode);
+      }
+      if (states.brass) {
+        scheduleBrassOffline(point, start, intervalSec, panner);
+      }
+    }
+  }, totalDuration);
+
+  return audioBufferToWavBlob(rendered);
+}
+
+function triggerBlobDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 // --- Main performance function ---
 async function performPoint(dataPoint, duration = 0.8) {
   // Ensure audio context is started
@@ -369,5 +598,11 @@ window.Sonification = {
       spatial: sonificationState.enableSpatial,
       tts: sonificationState.enableTTS
     };
+  },
+
+  // Render and download full sequence as WAV.
+  downloadSequenceWav: async function(dataPoints, intervalMs = 800, filename = 'hurricane-sonification.wav') {
+    const blob = await renderSequenceToWav(dataPoints, intervalMs);
+    triggerBlobDownload(blob, filename);
   }
 };

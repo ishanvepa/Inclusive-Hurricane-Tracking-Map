@@ -21,6 +21,33 @@ const Explain = (() => {
   /**
    * Initialize the explanation module
    */
+  /**
+   * Hide the What's Happening button and its popup so the feature
+   * is completely invisible when the server is not running.
+   */
+  function hideFeature() {
+    const btn = document.getElementById('whats-happening-button');
+    const wrapper = document.getElementById('explain-popup-wrapper');
+    if (btn)     btn.style.display = 'none';
+    if (wrapper) wrapper.style.display = 'none';
+  }
+
+  /**
+   * Ping the server health endpoint.
+   * Returns true if the server responded OK, false otherwise.
+   */
+  async function checkServerAvailable() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2-second timeout
+      const res = await fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   function init() {
     modal = document.getElementById('explain-popup');
     modalContent = document.getElementById('explain-content');
@@ -56,6 +83,21 @@ const Explain = (() => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && isOpen) {
         close();
+      }
+    });
+
+    // Hide the What's Happening feature if the server is not running.
+    // We start hidden and only show once we confirm the server is up.
+    hideFeature();
+    checkServerAvailable().then(available => {
+      if (available) {
+        const btn = document.getElementById('whats-happening-button');
+        const wrapper = document.getElementById('explain-popup-wrapper');
+        if (btn)     btn.style.display = '';
+        if (wrapper) wrapper.style.display = '';
+        console.log('Explain module: server available — feature enabled.');
+      } else {
+        console.log('Explain module: server not available — feature hidden.');
       }
     });
     

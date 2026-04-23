@@ -510,6 +510,7 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const autoSonifyCheckbox = document.getElementById('auto-sonify');
   const playCurrentBtn = document.getElementById('play-current-point');
   const playSequenceBtn = document.getElementById('play-sequence');
+  const downloadSequenceWavBtn = document.getElementById('download-sequence-wav');
   
   // Sound layer toggle controls
   const toggleStrings = document.getElementById('toggle-strings');
@@ -580,6 +581,31 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
           // Callback when sequence completes
           playSequenceBtn.textContent = '▶ Play Full Sequence';
         });
+      }
+    });
+  }
+
+  if (downloadSequenceWavBtn) {
+    downloadSequenceWavBtn.addEventListener('click', async function() {
+      const originalText = this.textContent;
+      this.disabled = true;
+      this.textContent = 'Rendering WAV...';
+
+      try {
+        await window.Sonification.downloadSequenceWav(
+          hurricane_path,
+          800,
+          'hurricane_michael_full_sonification.wav'
+        );
+        this.textContent = 'Downloaded WAV';
+      } catch (err) {
+        console.error('Failed to export WAV sonification:', err);
+        this.textContent = 'Export Failed';
+      } finally {
+        setTimeout(() => {
+          this.disabled = false;
+          this.textContent = originalText;
+        }, 1200);
       }
     });
   }
