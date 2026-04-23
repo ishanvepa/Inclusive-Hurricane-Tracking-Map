@@ -229,9 +229,10 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
     },
     mapNavigation: { enabled: true, enableButtons: false },
     series: [
-      { name: "Base map", nullColor: "#acb", legendSymbolColor: "#acb", borderColor: "#888", mapData: usa },
-      { type: 'tiledwebmap', name: 'Basemap Tiles', provider: { type: 'OpenStreetMap' }, showInLegend: false },
+      { name: "Base map", nullColor: "#acb", legendSymbolColor: "#acb", borderColor: "#888", mapData: usa, accessibility: { enabled: false } },
+      { type: 'tiledwebmap', name: 'Basemap Tiles', provider: { type: 'OpenStreetMap' }, showInLegend: false, accessibility: { enabled: false } },
       { name: "Hurricane Path", type: "mapline", lineWidth: 3, color: "#000000", zIndex: 2, legendSymbolColor: "#d22", enableMouseTracking: false,
+        accessibility: { enabled: false },
         data: [{ geometry: { type: "LineString", coordinates: hurricane_path.map(p => [p.lon, p.lat]) } }] },
       { id: 'user-locations', name: "User Locations", type: "mappoint", zIndex: 5, visible: true,
         tooltip: {
@@ -245,6 +246,18 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
         data: []
       },
       { name: "Hurricane Path Markers", type: "mappoint", visible: false, zIndex: 3, dataLabels: { enabled: false },
+      accessibility: {
+        point: {
+          descriptionFormatter: function(point) {
+            const date = new Date(point.time);
+            const dateStr = date.toLocaleString('en-US', {
+              month: 'short', day: 'numeric', year: 'numeric',
+              hour: 'numeric', minute: 'numeric'
+            });
+            return `${point.name}, ${dateStr}`;
+          }
+        }
+      },
       tooltip: {
         hideDelay: 0,
         stickOnContact: false,
@@ -296,7 +309,14 @@ Highcharts.SVGRenderer.prototype.symbols.pentagon = function (x, y, w, h) {
   const coneGeo = window.topojson.feature(coneTopo, coneTopo.objects[coneObjectKey]);
     chart.addSeries({ name: "Cone of Uncertainty", type: "map", lineWidth: 3, tooltip: { enabled: false }, enableMouseTracking: false,
     color: "#cc0000", opacity: 0.5, legendSymbolColor: "#d22", data: coneGeo.features.map(f => ({ geometry: f.geometry, properties: f.properties })),
-    mapData: coneGeo, zIndex: 0, joinBy: null });
+    mapData: coneGeo, zIndex: 0, joinBy: null,
+    accessibility: {
+      description: 'Cone of Uncertainty',
+      point: {
+        descriptionFormatter: function() { return 'Cone of Uncertainty'; }
+      }
+    }
+    });
 
  
   // Setup interaction handlers
